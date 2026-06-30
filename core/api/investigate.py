@@ -24,7 +24,7 @@ async def investigate(req: OSINTRequest):
             user_query=req.target,
             max_iterations=req.max_iterations
         )
-        return {"status": "success", "result": res}
+        return OSINTResponse(status="success", result=res)
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
-        return {"status": "error"}
+        return OSINTResponse(status="error", result="ошибка")
