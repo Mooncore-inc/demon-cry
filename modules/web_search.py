@@ -1,8 +1,11 @@
-from modules.base_modules import OSINTModule
-
-from curl_cffi import requests
+import httpx
 from bs4 import BeautifulSoup
 import urllib.parse
+
+from modules.base_modules import OSINTModule
+
+HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"}
+
 
 class WebSearch(OSINTModule):
     name = "web_search"
@@ -15,13 +18,13 @@ class WebSearch(OSINTModule):
         },
         "required": ["query"]
     }
-    
-    def execute(self, query: str, max_results: int = 5) -> dict:
-        """Базовый веб-поиск через DuckDuckGo"""
+
+    async def execute(self, query: str, max_results: int = 5) -> dict:
         try:
             url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
-    
-            response = requests.get(url, impersonate="chrome110", timeout=10)
+
+            async with httpx.AsyncClient(headers=HEADERS, timeout=10) as client:
+                response = await client.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
 
             results = []
@@ -30,7 +33,6 @@ class WebSearch(OSINTModule):
                 snippet_elem = result.find('a', class_='result__snippet')
 
                 if title_elem:
-            
                     href = title_elem.get('href', '')
                     if 'uddg=' in href:
                         actual_url = urllib.parse.unquote(href.split('uddg=')[1].split('&')[0])

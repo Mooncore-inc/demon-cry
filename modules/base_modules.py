@@ -22,6 +22,6 @@ class OSINTModule(ABC):
         pass
     
     @abstractmethod
-    def execute(self, **kwargs) -> dict:
+    async def execute(self, **kwargs) -> dict:
         """Логика выполнения"""
         pass

@@ -1,0 +1,11 @@
+.git
+.gitignore
+venv
+__pycache__
+*.pyc
+*.log
+.mimocode
+LICENSE
+README.md
+example_config.json
+demon-cry.log
