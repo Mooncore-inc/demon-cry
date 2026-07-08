@@ -1,7 +1,9 @@
+import httpx
+from bs4 import BeautifulSoup
+
 from modules.base_modules import OSINTModule
 
-from curl_cffi import requests
-from bs4 import BeautifulSoup
+HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"}
 
 
 class ParseWebsite(OSINTModule):
@@ -15,9 +17,10 @@ class ParseWebsite(OSINTModule):
         "required": ["url"]
     }
 
-    def execute(self, url: str) -> dict:
+    async def execute(self, url: str) -> dict:
         try:
-            response = requests.get(url, impersonate="chrome110", timeout=15)
+            async with httpx.AsyncClient(headers=HEADERS, timeout=15) as client:
+                response = await client.get(url)
             soup = BeautifulSoup(response.text, "html.parser")
 
             title = soup.title.string.strip() if soup.title and soup.title.string else ""

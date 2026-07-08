@@ -20,7 +20,7 @@ class OSINTResponse(BaseModel):
 @router.post(path="/investigate")
 async def investigate(req: OSINTRequest):
     try:
-        res = llm.run_chain(
+        res = await llm.run_chain(
             user_query=req.target,
             max_iterations=req.max_iterations
         )

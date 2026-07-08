@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -11,12 +12,16 @@ from core.api import investigate
 
 logger = logging.getLogger(__name__)
 
-registry.register(WebSearch())
-registry.register(ParseWebsite())
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await registry.register(WebSearch())
+    await registry.register(ParseWebsite())
+    yield
 
 app = FastAPI(
     title="Demon cry",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 app.include_router(investigate.router)
