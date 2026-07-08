@@ -27,8 +27,6 @@ cp example_config.json config.json
 ```bash
 uvicorn core.__main__:app --host 0.0.0.0 --port 8000
 ```
-# Открываем в браузере
-# http://localhost:8000
 
 # API
 ```bash

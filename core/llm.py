@@ -47,7 +47,7 @@ class LLM:
             messages.append(response_message)
             self._process_tool_calls(response_message.tool_calls, messages)
 
-        logger.warning(f"Превышен лимит итераций ({max_iterations})")
+        logger.warning(f"Iteration limit exceeded ({max_iterations})")
         return None
 
     def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> Any:
@@ -65,7 +65,7 @@ class LLM:
     def _process_tool_calls(self, tool_calls: list, messages: list[dict]):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
         for tool_call in tool_calls:
-            logger.info(f"Вызов инструмента: {tool_call.function.name}")
+            logger.info(f"Tool call: {tool_call.function.name}")
             result = self._execute_tool(tool_call)
             
             messages.append({
@@ -81,11 +81,11 @@ class LLM:
             args = json.loads(tool_call.function.arguments)
             
             if name not in registry.modules:
-                return {"error": f"Инструмент '{name}' не найден"}
+                return {"error": f"Tool '{name}' not found"}
                 
             return registry.execute(name, **args)
         except Exception as e:
-            logger.exception(f"Ошибка при выполнении инструмента {name}")
+            logger.exception(f"Error during tool execution {name}")
             return {"error": str(e)}
 
 llm = LLM()
