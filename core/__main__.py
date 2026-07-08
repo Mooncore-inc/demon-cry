@@ -8,7 +8,7 @@ from core.module_registry import registry
 from modules.web_search import WebSearch
 from modules.parse_website import ParseWebsite
 
-from core.api import investigate
+from core.api import investigate, health
 
 logger = logging.getLogger(__name__)
 
@@ -25,3 +25,4 @@ app = FastAPI(
 )
 
 app.include_router(investigate.router)
+app.include_router(health.router)
