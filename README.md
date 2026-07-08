@@ -34,3 +34,22 @@ curl -X POST http://localhost:8000/investigate \
      -H "Content-Type: application/json" \
      -d '{"target": "Илон маск", "max_iterations": 10}'
 ```
+
+### Docker
+
+Сборка образа и запуск:
+```bash
+docker compose up -d
+```
+
+Остановка:
+```bash
+docker compose down
+```
+
+Логи:
+```bash
+docker compose logs -f
+```
+
+Конфигурация передаётся через volume-монтирование `config.json` (read-only). Swagger-документация доступна по адресу `http://localhost:8000/docs`.
