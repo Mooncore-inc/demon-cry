@@ -20,24 +20,31 @@ class LLM:
         )
         self.model = config.model
 
-    async def run_chain(self, user_query: str, max_iterations: int = 10) -> str | None:
+    async def run_chain(self, user_query: str, max_iterations: int = 10) -> tuple[str | None, list[dict]]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_query}
             ]
+        tools_used: list[dict] = []
 
         for _ in range(max_iterations):
             response_message = await self._call_llm(messages)
 
             if not response_message.tool_calls:
-                return response_message.content
+                return response_message.content, tools_used
+
+            for tc in response_message.tool_calls:
+                tools_used.append({
+                    "name": tc.function.name,
+                    "arguments": json.loads(tc.function.arguments),
+                })
 
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
         logger.warning(f"Iteration limit exceeded ({max_iterations})")
-        return None
+        return None, tools_used
 
     async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> Any:
         """Выполняет запрос к модели."""

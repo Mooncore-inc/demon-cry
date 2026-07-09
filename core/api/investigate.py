@@ -16,15 +16,16 @@ class OSINTRequest(BaseModel):
 class OSINTResponse(BaseModel):
     status: str
     result: str | None = None
+    tools_used: list[dict] = []
 
 @router.post(path="/investigate")
 async def investigate(req: OSINTRequest):
     try:
-        res = await llm.run_chain(
+        res, tools = await llm.run_chain(
             user_query=req.target,
             max_iterations=req.max_iterations
         )
-        return OSINTResponse(status="success", result=res)
+        return OSINTResponse(status="success", result=res, tools_used=tools)
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
         return OSINTResponse(status="error", result="ошибка")
