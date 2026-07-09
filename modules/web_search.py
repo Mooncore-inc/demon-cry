@@ -9,17 +9,17 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 
 class WebSearch(OSINTModule):
     name = "web_search"
-    description = "Ищет в вебе через DuckDuckGo. Возвращает заголовки, URL и сниппеты."
+    description = "Searches the web via DuckDuckGo. Returns titles, URLs and snippets."
     parameters = {
         "type": "object",
         "properties": {
-            "query": {"type": "string", "description": "Поисковый запрос"},
-            "max_results": {"type": "integer", "description": "Максимум результатов (по умолчанию 5)"}
+            "query": {"type": "string", "description": "Search query"},
+            "max_results": {"type": "integer", "description": "Maximum number of results (default 10)"}
         },
         "required": ["query"]
     }
 
-    async def execute(self, query: str, max_results: int = 5) -> dict:
+    async def execute(self, query: str, max_results: int = 10) -> dict:
         try:
             url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
 

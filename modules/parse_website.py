@@ -8,11 +8,11 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 
 class ParseWebsite(OSINTModule):
     name = "parse_website"
-    description = "Загружает веб-страницу по URL и извлекает текст, заголовки и ссылки."
+    description = "Loads a web page by URL and extracts text, headings and links."
     parameters = {
         "type": "object",
         "properties": {
-            "url": {"type": "string", "description": "URL страницы для парсинга"}
+            "url": {"type": "string", "description": "URL of the page to parse"}
         },
         "required": ["url"]
     }
