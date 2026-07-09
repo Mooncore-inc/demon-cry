@@ -79,10 +79,8 @@ class LLM:
         name = tool_call.function.name
         try:
             args = json.loads(tool_call.function.arguments)
-
             if name not in registry.modules:
                 return {"error": f"Tool '{name}' not found"}
-
             return await registry.execute(name, **args)
         except Exception as e:
             logger.exception(f"Error during tool execution {name}")

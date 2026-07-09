@@ -1,6 +1,6 @@
 import time
-import httpx
 import logging
+import httpx
 
 from fastapi import APIRouter
 from pydantic import BaseModel
