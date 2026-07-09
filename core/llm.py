@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 from typing import Any
 
 from openai import AsyncOpenAI
@@ -8,20 +9,8 @@ from core.module_registry import registry
 
 logger = logging.getLogger(__name__)
 
-system_prompt = """Ты Demon Cry — OSINT-агент для работы с ПУБЛИЧНЫМИ данными.
-
-ПРАВИЛА:
-1. Работай ТОЛЬКО с открытыми источниками (сайты, публичные реестры, соцсети)
-2. НЕ собирай приватную информацию (пароли, личные данные без согласия)
-3. Если запрос легитимный (поиск публичной инфо) — выполняй
-4. Отказывайся ТОЛЬКО если запрос явно незаконный
-
-Легитимные запросы:
-- Поиск публичных профилей
-- Анализ сайтов компаний/учебных заведений
-- Проверка доменов, IP
-- Поиск упоминаний в открытых источниках
-"""
+PROMPTS_DIR = Path(__file__).parent / "prompts"
+system_prompt = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
 
 class LLM:
     def __init__(self):
