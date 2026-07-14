@@ -10,7 +10,7 @@ from core.module_registry import registry
 logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
-system_prompt = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
+system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
 
 class LLM:
     def __init__(self):
@@ -20,19 +20,34 @@ class LLM:
         )
         self.model = config.model
 
-    async def run_chain(self, user_query: str, max_iterations: int = 10) -> tuple[str | None, list[dict]]:
+    def _render_prompt(self, tokens_remaining: int, status: str) -> str:
+        budget = f"TOKEN BUDGET:\nRemaining: {tokens_remaining} tokens. Status: {status}."
+        if status == "critical":
+            budget += "\nSTOP using tools. Generate a final summary report with all findings now."
+        else:
+            budget += "\nContinue working as usual."
+        return system_prompt_template.replace("{{token_budget}}", budget)
+
+    async def run_chain(self, user_query: str, max_tokens: int = 10000) -> tuple[str | None, list[dict], int]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
+        threshold = int(max_tokens * 0.2)
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": self._render_prompt(max_tokens, "normal")},
             {"role": "user", "content": user_query}
             ]
         tools_used: list[dict] = []
+        total_tokens_used = 0
 
-        for _ in range(max_iterations):
-            response_message = await self._call_llm(messages)
+        while total_tokens_used < max_tokens:
+            tokens_remaining = max_tokens - total_tokens_used
+            status = "critical" if tokens_remaining < threshold else "normal"
+            messages[0]["content"] = self._render_prompt(tokens_remaining, status)
+
+            response_message, usage = await self._call_llm(messages)
+            total_tokens_used += usage.total_tokens
 
             if not response_message.tool_calls:
-                return response_message.content, tools_used
+                return response_message.content, tools_used, total_tokens_used
 
             for tc in response_message.tool_calls:
                 tools_used.append({
@@ -43,10 +58,10 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
-        logger.warning(f"Iteration limit exceeded ({max_iterations})")
-        return None, tools_used
+        logger.warning(f"Token limit exceeded ({max_tokens})")
+        return None, tools_used, total_tokens_used
 
-    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> Any:
+    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
             model=self.model,
@@ -56,7 +71,7 @@ class LLM:
             tool_choice="auto"
         )
         logger.info(f"Tokens used: {completion.usage}")
-        return completion.choices[0].message
+        return completion.choices[0].message, completion.usage
 
     async def _process_tool_calls(self, tool_calls: list, messages: list[dict]):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""

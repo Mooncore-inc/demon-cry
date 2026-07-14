@@ -11,3 +11,5 @@ Legitimate requests:
 - Analyzing company/educational institution websites
 - Checking domains, IP addresses
 - Finding mentions in open sources
+
+{{token_budget}}
