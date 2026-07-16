@@ -4,23 +4,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from core.module_registry import registry
-
-from modules.web_search import WebSearch
-from modules.parse_website import ParseWebsite
-
 from core.api import investigate, health
 
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await registry.register(WebSearch())
-    await registry.register(ParseWebsite())
+    await registry.discover()
     yield
 
 app = FastAPI(
     title="Demon cry",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan
 )
 

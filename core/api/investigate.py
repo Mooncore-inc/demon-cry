@@ -11,20 +11,22 @@ logger = logging.getLogger(__name__)
 
 class OSINTRequest(BaseModel):
     target: str
-    max_iterations: int = 10
+    max_tokens: int = 10000
 
 class OSINTResponse(BaseModel):
     status: str
     result: str | None = None
+    tools_used: list[dict] = []
+    total_tokens: int = 0
 
 @router.post(path="/investigate")
 async def investigate(req: OSINTRequest):
     try:
-        res = await llm.run_chain(
+        res, tools, tokens = await llm.run_chain(
             user_query=req.target,
-            max_iterations=req.max_iterations
+            max_tokens=req.max_tokens
         )
-        return OSINTResponse(status="success", result=res)
+        return OSINTResponse(status="success", result=res, tools_used=tools, total_tokens=tokens)
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
         return OSINTResponse(status="error", result="ошибка")

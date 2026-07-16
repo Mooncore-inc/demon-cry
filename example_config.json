@@ -1,5 +1,5 @@
 {
-    "base_url": "-",
-    "api_key": "",
-    "model": "qwen-tip"
+    "base_url": "http://localhost:11434/v1",
+    "api_key": "ollama",
+    "model": "qwen3:32b"
 }
