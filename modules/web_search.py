@@ -1,55 +1,74 @@
 import httpx
-from bs4 import BeautifulSoup
-import urllib.parse
 
 from modules.base_modules import OSINTModule
-
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"}
+from core.config import config
 
 
 class WebSearch(OSINTModule):
     name = "web_search"
-    description = "Searches the web via DuckDuckGo. Returns titles, URLs and snippets."
+    description = "Searches the web via SearXNG. Supports Google dorks (site:, filetype:, intitle:, inurl:), categories and time ranges."
     parameters = {
         "type": "object",
         "properties": {
-            "query": {"type": "string", "description": "Search query"},
-            "max_results": {"type": "integer", "description": "Maximum number of results (default 10)"}
+            "query": {"type": "string", "description": "Search query. Supports Google dorks syntax."},
+            "category": {
+                "type": "string",
+                "enum": ["general", "images", "files", "it", "social media", "news"],
+                "default": "general",
+                "description": "Category to search in. Use 'files' for documents, 'images' for pictures."
+            },
+            "time_range": {
+                "type": "string",
+                "enum": ["day", "week", "month", "year", "all"],
+                "default": "all",
+                "description": "Time filter for the search results."
+            }
         },
         "required": ["query"]
     }
 
-    async def execute(self, query: str, max_results: int = 10) -> dict:
+    async def execute(self, query: str, category: str = "general", time_range: str = "all") -> dict:
         try:
-            url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+            params = {
+                "q": query,
+                "format": "json",
+                "categories": category,
+            }
+            if time_range and time_range != "all":
+                params["time_range"] = time_range
 
-            async with httpx.AsyncClient(headers=HEADERS, timeout=10) as client:
-                response = await client.get(url)
-            soup = BeautifulSoup(response.text, 'html.parser')
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(
+                    f"{config.searxng_url}/search",
+                    params=params,
+                )
+                response.raise_for_status()
+
+            data = response.json()
+
+            warnings = []
+            for engine, reason in data.get("unresponsive_engines", []):
+                warnings.append(f"{engine}: {reason}")
 
             results = []
-            for result in soup.find_all('div', class_='result__body')[:max_results]:
-                title_elem = result.find('a', class_='result__a')
-                snippet_elem = result.find('a', class_='result__snippet')
-
-                if title_elem:
-                    href = title_elem.get('href', '')
-                    if 'uddg=' in href:
-                        actual_url = urllib.parse.unquote(href.split('uddg=')[1].split('&')[0])
-                    else:
-                        actual_url = href
-
+            for r in data.get("results", [])[:10]:
                 results.append({
-                    "title": title_elem.text.strip(),
-                    "url": actual_url,
-                    "snippet": snippet_elem.text.strip() if snippet_elem else ""
+                    "title": r.get("title", ""),
+                    "url": r.get("url", ""),
+                    "snippet": r.get("content", ""),
+                    "engine": r.get("engine", "unknown"),
                 })
 
-            return {
+            resp = {
                 "query": query,
+                "category": category,
+                "time_range": time_range,
                 "results": results,
-                "count": len(results)
+                "total_found": len(results),
             }
+            if warnings:
+                resp["warnings"] = warnings
+            return resp
 
         except Exception as e:
             return {"error": str(e), "query": query}
