@@ -29,7 +29,7 @@ class LLM:
             budget += "\nContinue working as usual."
         return system_prompt_template.replace("{{token_budget}}", budget)
 
-    async def run_chain(self, user_query: str, max_tokens: int = 10000) -> tuple[str | None, list[dict], int]:
+    async def run_chain(self, user_query: str, max_tokens: int = 15000) -> tuple[str | None, list[dict], int]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         threshold = int(max_tokens * 0.2)
         messages = [

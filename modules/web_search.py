@@ -55,7 +55,7 @@ class WebSearch(OSINTModule):
                 results.append({
                     "title": r.get("title", ""),
                     "url": r.get("url", ""),
-                    "snippet": r.get("content", ""),
+                    "snippet": (lambda c: c[:150] + "..." if len(c) > 150 else c)(r.get("content", "")),
                     "engine": r.get("engine", "unknown"),
                 })
 
