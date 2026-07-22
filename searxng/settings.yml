@@ -15,9 +15,29 @@ search:
     expiration_time: 3600
 
 engines:
+  - name: startpage
+    disabled: true
+
   - name: duckduckgo
     disabled: false
+    weight: 1.5
+
+  - name: google
+    disabled: false
+    weight: 1.5
+
+  - name: bing
+    disabled: false
+    weight: 1.5
+  
+  - name: qwant
+    disabled: false
+    weight: 1.2
+  
+  - name: yandex
+    disabled: false
+    weight: 1.0
+  
   - name: wikipedia
     disabled: false
-  - name: github
-    disabled: false
+    weight: 0.8
