@@ -6,3 +6,13 @@ services:
     volumes:
       - ./config.json:/app/config.json:ro,z
     restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:z
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+    restart: unless-stopped

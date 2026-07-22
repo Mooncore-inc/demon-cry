@@ -1,0 +1,23 @@
+use_default_settings: true
+
+server:
+  secret_key: "demon_cry_local_dev_secret_key_2026"
+  limiter: false
+  bind_address: "0.0.0.0"
+  port: 8080
+
+search:
+  formats:
+    - html
+    - json
+  cache:
+    enable: true
+    expiration_time: 3600
+
+engines:
+  - name: duckduckgo
+    disabled: false
+  - name: wikipedia
+    disabled: false
+  - name: github
+    disabled: false

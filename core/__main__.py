@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from core.module_registry import registry
-from core.api import investigate, health
+from core.api.router import router
 
 logger = logging.getLogger(__name__)
 
@@ -19,5 +19,4 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.include_router(investigate.router)
-app.include_router(health.router)
+app.include_router(router)
