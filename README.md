@@ -25,13 +25,14 @@ pip install -r requirements.txt
 cp example_config.json config.json
 ```
 
-Файл `config.json` содержит три поля:
+Файл `config.json` содержит четыре поля:
 
 | Поле | Описание |
 |------|----------|
 | `base_url` | URL API-провайдера (совместимого с OpenAI API) |
 | `api_key` | Ключ доступа к API |
 | `model` | Идентификатор модели |
+| `searxng_url` | URL SearXNG (по умолчанию `http://searxng:8080` для Docker) |
 
 #### Примеры для разных провайдеров
 
@@ -78,7 +79,7 @@ Swagger-документация доступна по адресу `http://loca
 
 **Запрос:**
 ```bash
-curl -X 'POST' 'http://localhost:8000/investigate' \
+curl -X 'POST' 'http://localhost:8000/api/investigate' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -128,3 +129,34 @@ docker compose logs -f
 ```
 
 Конфигурация передаётся через volume-монтирование `config.json` (read-only).
+
+### SearXNG
+
+Для работы `web_search` нужен SearXNG — метапоисковик, агрегирующий результаты Google, DuckDuckGo, Brave и других.
+
+SearXNG доступен внутри Docker-сети по адресу `http://searxng:8080`. Приложение подключается к нему автоматически — ничего настраивать не нужно.
+
+#### Запуск локально для разработки
+
+Если запускаете приложение **вне Docker** (`uvicorn` напрямую), SearXNG нужно поднять отдельно:
+
+```bash
+docker run -d --name searxng -p 8080:8080 searxng/searxng:latest
+```
+
+И указать URL в `config.json`:
+```json
+{
+    "searxng_url": "http://localhost:8080"
+}
+```
+
+> **Важно:** при запуске через Docker Compose используется `http://searxng:8080` (имя контейнера в сети), при локальной разработке — `http://localhost:8080`.
+
+#### Проверка работоспособности
+
+```bash
+curl 'http://localhost:8080/search?q=test&format=json'
+```
+
+Ответ должен содержать JSON с полем `results`.

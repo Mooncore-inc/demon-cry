@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class OSINTRequest(BaseModel):
     target: str
-    max_tokens: int = 10000
+    max_tokens: int = 15000
 
 class OSINTResponse(BaseModel):
     status: str

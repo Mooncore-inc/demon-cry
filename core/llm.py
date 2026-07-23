@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from pathlib import Path
@@ -23,12 +24,12 @@ class LLM:
     def _render_prompt(self, tokens_remaining: int, status: str) -> str:
         budget = f"TOKEN BUDGET:\nRemaining: {tokens_remaining} tokens. Status: {status}."
         if status == "critical":
-            budget += "\nSTOP using tools. Generate a final summary report with all findings now."
+            budget += "\nBudget is critical. Generate a final summary report with all findings now."
         else:
             budget += "\nContinue working as usual."
         return system_prompt_template.replace("{{token_budget}}", budget)
 
-    async def run_chain(self, user_query: str, max_tokens: int = 10000) -> tuple[str | None, list[dict], int]:
+    async def run_chain(self, user_query: str, max_tokens: int = 15000) -> tuple[str | None, list[dict], int]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         threshold = int(max_tokens * 0.2)
         messages = [
@@ -43,7 +44,8 @@ class LLM:
             status = "critical" if tokens_remaining < threshold else "normal"
             messages[0]["content"] = self._render_prompt(tokens_remaining, status)
 
-            response_message, usage = await self._call_llm(messages)
+            use_tools = status != "critical"
+            response_message, usage = await self._call_llm(messages, use_tools=use_tools)
             total_tokens_used += usage.total_tokens
 
             if not response_message.tool_calls:
@@ -58,32 +60,39 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
-        logger.warning(f"Token limit exceeded ({max_tokens})")
+        logger.warning(f"Token limit reached ({total_tokens_used}/{max_tokens})")
         return None, tools_used, total_tokens_used
 
-    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
+    async def _call_llm(self, messages: list[dict], temperature: float = 0.3, use_tools: bool = True) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
-        completion = await self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            tools=await registry.get_tools_schema(),
-            tool_choice="auto"
-        )
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        if use_tools:
+            kwargs["tools"] = await registry.get_tools_schema()
+            kwargs["tool_choice"] = "auto"
+
+        completion = await self.client.chat.completions.create(**kwargs)
         logger.info(f"Tokens used: {completion.usage}")
         return completion.choices[0].message, completion.usage
 
     async def _process_tool_calls(self, tool_calls: list, messages: list[dict]):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
-        for tool_call in tool_calls:
+
+        async def execute_single(tool_call):
             logger.info(f"Tool call: {tool_call.function.name}")
             result = await self._execute_tool(tool_call)
 
-            messages.append({
+            return {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
                 "content": json.dumps(result, ensure_ascii=False)
-            })
+            }
+
+        results = await asyncio.gather(*(execute_single(tc) for tc in tool_calls))
+        messages.extend(results)
 
     async def _execute_tool(self, tool_call) -> dict:
         """Парсит аргументы и выполняет инструмент."""

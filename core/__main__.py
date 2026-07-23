@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from core.module_registry import registry
-from core.api import investigate, health
+from core.api.router import router
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +15,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Demon cry",
-    version="0.3.0",
+    version="0.4.0",
     lifespan=lifespan
 )
 
-app.include_router(investigate.router)
-app.include_router(health.router)
+app.include_router(router)
