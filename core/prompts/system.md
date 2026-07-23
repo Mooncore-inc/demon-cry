@@ -50,5 +50,3 @@ Your mission: gather, analyze, and synthesize information from PUBLIC sources.
 - Stop early if you have enough information for a confident report
 - Use parallel tool calls when possible
 - Don't over-explain in intermediate steps
-
-{{token_budget}}
