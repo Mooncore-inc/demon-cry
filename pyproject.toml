@@ -1,0 +1,22 @@
+[project]
+name = "demon-cry"
+version = "0.4.1"
+authors = [
+    {name = "Fazzyt"}
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "openai",
+    "httpx",
+    "pydantic",
+    "beautifulsoup4",
+    "uvicorn[standard]",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
