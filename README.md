@@ -104,7 +104,10 @@ Swagger: http://localhost:8000/docs
 **Пример:**
 
 ```bash
-curl -X 'POST' 'http://localhost:8000/api/investigate' \
+curl -X 'POST' \
+  'http://localhost:8000/api/investigate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer secret' \
   -H 'Content-Type: application/json' \
   -d '{"target": "кто такой fazzyt", "max_tokens": 10000}'
 ```
