@@ -7,6 +7,10 @@ Demon Cry — это автономный OSINT-агент, который ис�
 
 ## Быстрый старт
 
+```bash
+curl -fsSL https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/install.sh | bash
+```
+
 Создайте `docker-compose.yml`:
 
 ```yaml
@@ -39,6 +43,7 @@ networks:
 ```json
 {
     "base_url": "https://api.openai.com/v1",
+    "master_key": "secret",
     "api_key": "sk-...",
     "model": "gpt-4o",
     "searxng_url": "http://searxng:8080"
