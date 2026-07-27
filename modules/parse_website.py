@@ -1,5 +1,6 @@
 import httpx
-from bs4 import BeautifulSoup
+import re
+from selectolax.parser import HTMLParser
 from urllib.parse import urljoin
 from modules.base_modules import OSINTModule
 
@@ -32,7 +33,7 @@ class ParseWebsite(OSINTModule):
         try:
             async with httpx.AsyncClient(
                 headers=HEADERS, 
-                timeout=30.0, 
+                timeout=15.0,
                 follow_redirects=True,
                 verify=False 
             ) as client:
@@ -44,36 +45,48 @@ class ParseWebsite(OSINTModule):
                 return {"error": f"Not an HTML page. Content-Type: {content_type}", "url": url}
 
             response.encoding = response.charset_encoding or "utf-8"
-            soup = BeautifulSoup(response.text, "html.parser")
+            tree = HTMLParser(response.text)
 
+            useful_meta = ["description", "og:description", "og:title", "keywords", "author"]
             meta = {}
-            for tag in soup.find_all("meta"):
-                name = tag.get("name") or tag.get("property")
-                content = tag.get("content")
-                if name and content:
+            for tag in tree.css("meta"):
+                name = tag.attributes.get("name") or tag.attributes.get("property")
+                content = tag.attributes.get("content")
+                if name in useful_meta and content:
                     meta[name] = content
 
-            title = (soup.title.string.strip() if soup.title and soup.title.string else "") or meta.get("og:title", "")
+            title_node = tree.css_first("title")
+            title = title_node.text(strip=True) if title_node else ""
+            if not title:
+                title = meta.get("og:title", "")
 
-            for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "iframe", "svg"]):
+            kill_selectors = (
+                "script, style, nav, footer, header, noscript, iframe, svg, "
+                "[hidden], [aria-hidden='true'], .Skeleton, .js-pinned-items-reorder-container, "
+                ".sidebar, .infobox, .toc, table, form"
+            )
+            for tag in tree.css(kill_selectors):
                 tag.decompose()
 
-            headings = [
-                {"level": h.name, "text": h.get_text(strip=True)} 
-                for h in soup.find_all(["h1", "h2", "h3"]) 
-                if h.get_text(strip=True)
-            ]
+            main = tree.css_first(".markdown-body, .mw-parser-output, #content, article, main, .post-content, .entry-content")
+            target_node = main or tree.body or tree
 
-            text = soup.get_text(separator="\n", strip=True)
-            if len(text) > 4000:
-                text = text[:4000] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
+            text = target_node.text(separator="\n", strip=True)
+
+            text = re.sub(r'\n\s*\n+', '\n\n', text)
+            text = "\n".join(line.strip() for line in text.split("\n") if line.strip())
+
+            MAX_CHARS = 4000
+            truncated = len(text) > MAX_CHARS
+            if truncated:
+                text = text[:MAX_CHARS] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
 
             links = []
-            for a in soup.find_all("a", href=True):
-                href = urljoin(str(response.url), a["href"])
+            for a in tree.css("a[href]"):
+                href = urljoin(str(response.url), a.attributes.get("href"))
                 if href.startswith(("http://", "https://")) and href != str(response.url):
                     links.append({
-                        "title": a.get_text(strip=True)[:50] or "No title", 
+                        "title": a.text(strip=True)[:50] or "No title", 
                         "url": href
                     })
             
@@ -84,7 +97,6 @@ class ParseWebsite(OSINTModule):
                 "status_code": response.status_code,
                 "title": title,
                 "meta": meta,
-                "headings": headings,
                 "text": text,
                 "links": unique_links,
             }

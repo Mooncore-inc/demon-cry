@@ -13,6 +13,7 @@ cp example_config.json config.json
 | Поле | Описание | Пример |
 |------|----------|--------|
 | `base_url` | URL API-провайдера (совместимого с OpenAI API) | `https://api.openai.com/v1` |
+| `master_key` | Ключ для доступа к api | `сами думайте` |
 | `api_key` | Ключ доступа к API | `sk-...` |
 | `model` | Идентификатор модели | `gpt-4o` |
 | `searxng_url` | URL SearXNG | `http://localhost:8080` |

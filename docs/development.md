@@ -12,7 +12,11 @@ poetry install
 
 ```bash
 cp example_config.json config.json  # настроить base_url, api_key, model
-poetry run uvicorn core.__main__:app --host 0.0.0.0 --port 8000
+
+# Запускает только зависимости (SearXNG)
+docker compose -f docker-compose-dev.yml up -d
+
+poetry run uvicorn core.__main__:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Swagger доступен по `http://localhost:8000/docs`.
@@ -20,12 +24,6 @@ Swagger доступен по `http://localhost:8000/docs`.
 ## SearXNG для локальной разработки
 
 Модуль `web_search` работает через SearXNG — метапоисковик, агрегирующий результаты Google, DuckDuckGo, Bing и других. Без него поиск в интернете не будет работать.
-
-При запуске через Docker Compose SearXNG поднимается автоматически. Если же запускаете приложение через `uvicorn` напрямую, поднимите SearXNG отдельно:
-
-```bash
-docker run -d --name searxng -p 8080:8080 searxng/searxng:latest
-```
 
 Укажите URL в `config.json`:
 
