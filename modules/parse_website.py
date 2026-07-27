@@ -1,5 +1,5 @@
 import httpx
-from bs4 import BeautifulSoup
+from selectolax.parser import HTMLParser
 from urllib.parse import urljoin
 from modules.base_modules import OSINTModule
 
@@ -44,36 +44,39 @@ class ParseWebsite(OSINTModule):
                 return {"error": f"Not an HTML page. Content-Type: {content_type}", "url": url}
 
             response.encoding = response.charset_encoding or "utf-8"
-            soup = BeautifulSoup(response.text, "html.parser")
+            tree = HTMLParser(response.text)
 
             meta = {}
-            for tag in soup.find_all("meta"):
-                name = tag.get("name") or tag.get("property")
-                content = tag.get("content")
+            for tag in tree.css("meta"):
+                name = tag.attributes.get("name") or tag.attributes.get("property")
+                content = tag.attributes.get("content")
                 if name and content:
                     meta[name] = content
 
-            title = (soup.title.string.strip() if soup.title and soup.title.string else "") or meta.get("og:title", "")
+            title_node = tree.css_first("title")
+            title = title_node.text(strip=True) if title_node else ""
+            if not title:
+                title = meta.get("og:title", "")
 
-            for tag in soup(["script", "style", "nav", "footer", "header", "noscript", "iframe", "svg"]):
+            for tag in tree.css("script, style, nav, footer, header, noscript, iframe, svg"):
                 tag.decompose()
 
             headings = [
-                {"level": h.name, "text": h.get_text(strip=True)} 
-                for h in soup.find_all(["h1", "h2", "h3"]) 
-                if h.get_text(strip=True)
+                {"level": h.tag, "text": h.text(strip=True)} 
+                for h in tree.css("h1, h2, h3") 
+                if h.text(strip=True)
             ]
 
-            text = soup.get_text(separator="\n", strip=True)
+            text = tree.text(separator="\n", strip=True)
             if len(text) > 4000:
                 text = text[:4000] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
 
             links = []
-            for a in soup.find_all("a", href=True):
-                href = urljoin(str(response.url), a["href"])
+            for a in tree.css("a[href]"):
+                href = urljoin(str(response.url), a.attributes.get("href"))
                 if href.startswith(("http://", "https://")) and href != str(response.url):
                     links.append({
-                        "title": a.get_text(strip=True)[:50] or "No title", 
+                        "title": a.text(strip=True)[:50] or "No title", 
                         "url": href
                     })
             
