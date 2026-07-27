@@ -5,14 +5,15 @@ Demon Cry — это автономный OSINT-агент, который ис�
 [![License: MPL2](https://img.shields.io/badge/License-MPL2-red.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-red.svg)](https://www.python.org/downloads/)
 
-## Быстрый старт
+## Быстрый старт (Рекомендуется)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/install.sh | bash
+bash <(curl -Ls https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/install.sh)
 ```
 
+## Ручная настройка
 <details>
-<summary>Нажмите, чтобы открыть список</summary>
+<summary>Нажмите, чтобы открыть</summary>
 
 Создайте `docker-compose.yml`:
 

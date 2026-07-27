@@ -50,33 +50,33 @@ EOF
 # Создаём docker-compose.yml
 cat > docker-compose.yml <<EOF
 services:
-    app:
-        image: fazzyt/demon-cry:latest
-        ports:
-            - "8000:8000"
-        volumes:
-            - ./config.json:/app/config.json:ro,z
-        restart: unless-stopped
-        depends_on:
-            - searxng
-        networks:
-            - demon-cry-net
+  app:
+    image: fazzyt/demon-cry:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config.json:/app/config.json:ro,z
+    restart: unless-stopped
+    depends_on:
+      - searxng
+    networks:
+      - demon-cry-net
 
-    searxng:
-        image: searxng/searxng:latest
-        ports:
-            - "8080:8080"
-        volumes:
-            - ./searxng:/etc/searxng:z
-        environment:
-            - SEARXNG_BASE_URL=http://localhost:8080/
-        restart: unless-stopped
-        networks:
-            - demon-cry-net
+  searxng:
+    image: searxng/searxng:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:z
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+    restart: unless-stopped
+    networks:
+      - demon-cry-net
 
 networks:
-    demon-cry-net:
-        name: demon-cry-net
+  demon-cry-net:
+    name: demon-cry-net
 EOF
 
 # Создаем настройки для SearXNG
@@ -84,40 +84,40 @@ cat > searxng/settings.yml <<EOF
 use_default_settings: true
 
 server:
-    secret_key: "$(openssl rand -hex 32)"
-    limiter: false
-    bind_address: "0.0.0.0"
-    port: 8080
+  secret_key: "$(openssl rand -hex 32)"
+  limiter: false
+  bind_address: "0.0.0.0"
+  port: 8080
 
 search:
-    formats:
-        - html
-        - json
-    cache:
-        enable: true
-        expiration_time: 3600
+  formats:
+    - html
+    - json
+  cache:
+    enable: true
+    expiration_time: 3600
 
 engines:
-    - name: startpage
-        disabled: true
-    - name: duckduckgo
-        disabled: false
-        weight: 1.5
-    - name: google
-        disabled: false
-        weight: 1.5
-    - name: bing
-        disabled: false
-        weight: 1.5
-    - name: qwant
-        disabled: false
-        weight: 1.2
-    - name: yandex
-        disabled: false
-        weight: 1.0
-    - name: wikipedia
-        disabled: false
-        weight: 0.8
+  - name: startpage
+    disabled: true
+  - name: duckduckgo
+    disabled: false
+    weight: 1.5
+  - name: google
+    disabled: false
+    weight: 1.5
+  - name: bing
+    disabled: false
+    weight: 1.5
+  - name: qwant
+    disabled: false
+    weight: 1.2
+  - name: yandex
+    disabled: false
+    weight: 1.0
+  - name: wikipedia
+    disabled: false
+    weight: 0.8
 EOF
 
 # Запуск DC
