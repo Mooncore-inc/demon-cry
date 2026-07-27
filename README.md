@@ -11,6 +11,9 @@ Demon Cry — это автономный OSINT-агент, который ис�
 curl -fsSL https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/install.sh | bash
 ```
 
+<details>
+<summary>Нажмите, чтобы открыть список</summary>
+
 Создайте `docker-compose.yml`:
 
 ```yaml
@@ -103,6 +106,10 @@ engines:
 ```bash
 docker compose up -d
 ```
+
+</details>
+
+## Использование
 
 Swagger: http://localhost:8000/docs
 
