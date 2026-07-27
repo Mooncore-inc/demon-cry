@@ -20,7 +20,7 @@ echo ""
 echo -e "${GREEN}Step 1: LLM Configuration${NC}"
 read -p "Enter your LLM Provider Base URL (e.g., https://api.deepseek.com/v1): " BASE_URL
 read -p "Enter your API Key: (e.g., sk-...)" API_KEY
-read -p "Enter Model Name (default: deepseek-v4-flash): " MODEL
+read -p "Enter Model Name (e.g., deepseek-v4-flash): " MODEL
 
 # Мастер ключ
 echo ""
