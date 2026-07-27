@@ -1,4 +1,5 @@
 import httpx
+import re
 from selectolax.parser import HTMLParser
 from urllib.parse import urljoin
 from modules.base_modules import OSINTModule
@@ -32,7 +33,7 @@ class ParseWebsite(OSINTModule):
         try:
             async with httpx.AsyncClient(
                 headers=HEADERS, 
-                timeout=30.0, 
+                timeout=15.0,
                 follow_redirects=True,
                 verify=False 
             ) as client:
@@ -46,11 +47,12 @@ class ParseWebsite(OSINTModule):
             response.encoding = response.charset_encoding or "utf-8"
             tree = HTMLParser(response.text)
 
+            useful_meta = ["description", "og:description", "og:title", "keywords", "author"]
             meta = {}
             for tag in tree.css("meta"):
                 name = tag.attributes.get("name") or tag.attributes.get("property")
                 content = tag.attributes.get("content")
-                if name and content:
+                if name in useful_meta and content:
                     meta[name] = content
 
             title_node = tree.css_first("title")
@@ -58,18 +60,26 @@ class ParseWebsite(OSINTModule):
             if not title:
                 title = meta.get("og:title", "")
 
-            for tag in tree.css("script, style, nav, footer, header, noscript, iframe, svg"):
+            kill_selectors = (
+                "script, style, nav, footer, header, noscript, iframe, svg, "
+                "[hidden], [aria-hidden='true'], .Skeleton, .js-pinned-items-reorder-container, "
+                ".sidebar, .infobox, .toc, table, form"
+            )
+            for tag in tree.css(kill_selectors):
                 tag.decompose()
 
-            headings = [
-                {"level": h.tag, "text": h.text(strip=True)} 
-                for h in tree.css("h1, h2, h3") 
-                if h.text(strip=True)
-            ]
+            main = tree.css_first(".markdown-body, .mw-parser-output, #content, article, main, .post-content, .entry-content")
+            target_node = main or tree.body or tree
 
-            text = tree.text(separator="\n", strip=True)
-            if len(text) > 4000:
-                text = text[:4000] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
+            text = target_node.text(separator="\n", strip=True)
+
+            text = re.sub(r'\n\s*\n+', '\n\n', text)
+            text = "\n".join(line.strip() for line in text.split("\n") if line.strip())
+
+            MAX_CHARS = 4000
+            truncated = len(text) > MAX_CHARS
+            if truncated:
+                text = text[:MAX_CHARS] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
 
             links = []
             for a in tree.css("a[href]"):
@@ -87,7 +97,6 @@ class ParseWebsite(OSINTModule):
                 "status_code": response.status_code,
                 "title": title,
                 "meta": meta,
-                "headings": headings,
                 "text": text,
                 "links": unique_links,
             }
