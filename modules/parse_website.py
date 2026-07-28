@@ -1,7 +1,7 @@
-import httpx
 import re
-from selectolax.parser import HTMLParser
+import httpx
 from urllib.parse import urljoin
+from selectolax.parser import HTMLParser
 from modules.base_modules import OSINTModule
 
 HEADERS = {
@@ -32,10 +32,10 @@ class ParseWebsite(OSINTModule):
     async def execute(self, url: str) -> dict:
         try:
             async with httpx.AsyncClient(
-                headers=HEADERS, 
+                headers=HEADERS,
                 timeout=15.0,
                 follow_redirects=True,
-                verify=False 
+                verify=False
             ) as client:
                 response = await client.get(url)
                 response.raise_for_status()
@@ -44,7 +44,6 @@ class ParseWebsite(OSINTModule):
             if "text/html" not in content_type:
                 return {"error": f"Not an HTML page. Content-Type: {content_type}", "url": url}
 
-            response.encoding = response.charset_encoding or "utf-8"
             tree = HTMLParser(response.text)
 
             useful_meta = ["description", "og:description", "og:title", "keywords", "author"]
@@ -73,7 +72,7 @@ class ParseWebsite(OSINTModule):
 
             text = target_node.text(separator="\n", strip=True)
 
-            text = re.sub(r'\n\s*\n+', '\n\n', text)
+            text = re.sub(r'\n\s*\n+', '\n\n', text).strip()
             text = "\n".join(line.strip() for line in text.split("\n") if line.strip())
 
             MAX_CHARS = 4000
@@ -92,14 +91,12 @@ class ParseWebsite(OSINTModule):
             
             unique_links = list({v['url']: v for v in links}.values())[:15]
 
+            meta_md = "\n".join([f"- **{k}**: {v}" for k, v in meta.items()]) if meta else "- No metadata found\n"
+            links_md = "\n".join([f"- [{link['title']}]({link['url']})" for link in unique_links]) if unique_links else "- No external URLs detected"
+
             return {
-                "final_url": str(response.url),
-                "status_code": response.status_code,
-                "title": title,
-                "meta": meta,
-                "text": text,
-                "links": unique_links,
-            }
+                "report": f"Title: {title}\n\nURL Source: {response.url}\n\nMeta Data: {meta_md}\n\nContent:\n{text}\n\nLinks:{links_md}"
+                }
 
         except httpx.HTTPStatusError as e:
             return {"error": f"HTTP {e.response.status_code} ({e.response.reason_phrase})", "url": url}
