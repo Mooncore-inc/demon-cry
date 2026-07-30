@@ -21,3 +21,7 @@ demon-cry.log
 docs/
 searxng/
 config.json
+flake.nix
+flake.lock
+module.nix
+package.nix
