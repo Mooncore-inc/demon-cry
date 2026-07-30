@@ -12,11 +12,10 @@ logger = logging.getLogger(__name__)
 
 class OSINTRequest(BaseModel):
     target: str
-    max_tokens: int = 15000
 
 class OSINTResponse(BaseModel):
     status: str
-    result: str | None = None
+    result: str
     tools_used: list[dict] = []
     total_tokens: int = 0
 
@@ -24,8 +23,7 @@ class OSINTResponse(BaseModel):
 async def investigate(req: OSINTRequest):
     try:
         res, tools, tokens = await llm.run_chain(
-            user_query=req.target,
-            max_tokens=req.max_tokens
+            user_query=req.target
         )
         return OSINTResponse(status="success", result=res, tools_used=tools, total_tokens=tokens)
     except Exception as e:

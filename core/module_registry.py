@@ -3,10 +3,21 @@ import inspect
 import logging
 import pkgutil
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict, TypedDict
 
 import modules as modules_pkg
 from modules.base_modules import OSINTModule
+
+
+class ToolFunction(TypedDict):
+    name: str
+    description: str
+    parameters: dict[str, Any]
+
+
+class ToolDefinition(TypedDict):
+    type: str
+    function: ToolFunction
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +54,9 @@ class ModuleRegistry:
                     except Exception:
                         logger.exception(f"Failed to instantiate {obj.__name__}")
 
-    async def get_tools_schema(self) -> list:
+    async def get_tools_schema(self) -> list[ToolDefinition]:
         """Возвращает JSON Schema всех модулей для ИИ"""
-        tools = []
+        tools: list[ToolDefinition] = []
         for module in self.modules.values():
             tools.append({
                 "type": "function",
