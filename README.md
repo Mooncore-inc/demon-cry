@@ -122,7 +122,7 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer secret' \
   -H 'Content-Type: application/json' \
-  -d '{"target": "кто такой fazzyt", "max_tokens": 10000}'
+  -d '{"target": "кто такой fazzyt"}'
 ```
 
 ## Документация

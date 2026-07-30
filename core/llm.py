@@ -21,9 +21,8 @@ class LLM:
         )
         self.model = config.model
 
-    async def run_chain(self, user_query: str, max_tokens: int = 15000) -> tuple[str | None, list[dict], int]:
+    async def run_chain(self, user_query: str) -> tuple[str | None, list[dict], int]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
-        threshold = int(max_tokens * 0.2)
         messages = [
             {"role": "system", "content": system_prompt_template},
             {"role": "user", "content": user_query}
@@ -31,11 +30,8 @@ class LLM:
         tools_used: list[dict] = []
         total_tokens_used = 0
 
-        while total_tokens_used < max_tokens:
-            tokens_remaining = max_tokens - total_tokens_used
-            use_tools = tokens_remaining >= threshold
-
-            response_message, usage = await self._call_llm(messages, use_tools=use_tools)
+        while True:
+            response_message, usage = await self._call_llm(messages)
             total_tokens_used += usage.total_tokens
 
             if not response_message.tool_calls:
@@ -50,21 +46,16 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
-        logger.warning(f"Token limit reached ({total_tokens_used}/{max_tokens})")
-        return None, tools_used, total_tokens_used
-
-    async def _call_llm(self, messages: list[dict], temperature: float = 0.3, use_tools: bool = True) -> tuple[Any, Any]:
+    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
-        kwargs: dict[str, Any] = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": temperature,
-        }
-        if use_tools:
-            kwargs["tools"] = await registry.get_tools_schema()
-            kwargs["tool_choice"] = "auto"
+        completion = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=temperature,
+            tools=await registry.get_tools_schema(),
+            tool_choice="auto",
+        )
 
-        completion = await self.client.chat.completions.create(**kwargs)
         logger.info(f"Tokens used: {completion.usage}")
         return completion.choices[0].message, completion.usage
 
