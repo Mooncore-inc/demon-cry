@@ -5,9 +5,9 @@ from core.config import config
 
 
 class WebSearch(OSINTModule):
-    name = "web_search"
-    description = "Searches the web via SearXNG. Supports Google dorks (site:, filetype:, intitle:, inurl:), categories and time ranges."
-    parameters = {
+    name: str = "web_search"
+    description: str = "Searches the web via SearXNG. Supports Google dorks (site:, filetype:, intitle:, inurl:), categories and time ranges."
+    parameters: dict = {
         "type": "object",
         "properties": {
             "query": {"type": "string", "description": "Search query. Supports Google dorks syntax."},

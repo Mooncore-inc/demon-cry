@@ -1,27 +1,13 @@
-from abc import ABC, abstractmethod
+"""Базовые классы для OSINT-модулей."""
+from typing import Protocol
 
-class OSINTModule(ABC):
+class OSINTModule(Protocol):
     """Базовый класс для всех OSINT-модулей"""
-    
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        """Уникальное имя модуля"""
-        pass
-    
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Описание"""
-        pass
-    
-    @property
-    @abstractmethod
-    def parameters(self) -> dict:
-        """JSON Schema параметров"""
-        pass
-    
-    @abstractmethod
-    async def execute(self, **kwargs) -> dict:
+
+    name: str
+    description: str
+    parameters: dict
+
+    async def execute(self, **_kwargs) -> dict:
         """Логика выполнения"""
-        pass
+        return {}
