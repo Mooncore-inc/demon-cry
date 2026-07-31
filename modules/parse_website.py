@@ -45,13 +45,14 @@ class ParseWebsite(OSINTModule):
                 return {"error": f"Not an HTML page. Content-Type: {content_type}", "url": url}
 
             tree = HTMLParser(response.text)
+            page_url = str(response.url)
 
-            useful_meta = ["description", "og:description", "og:title", "keywords", "author"]
+            useful_meta = {"description", "og:description", "og:title", "keywords", "author"}
             meta = {}
             for tag in tree.css("meta"):
-                name = tag.attributes.get("name") or tag.attributes.get("property")
-                content = tag.attributes.get("content")
-                if name in useful_meta and content:
+                attrs = tag.attributes
+                name = attrs.get("name") or attrs.get("property")
+                if name in useful_meta and (content := attrs.get("content")):
                     meta[name] = content
 
             title_node = tree.css_first("title")
@@ -80,23 +81,29 @@ class ParseWebsite(OSINTModule):
             if truncated:
                 text = text[:MAX_CHARS] + "\n\n[... TEXT TRUNCATED DUE TO LENGTH. USE web_search FOR MORE DETAILS ...]"
 
-            links = []
+            seen = set()
+            links_md_lines = []
             for a in tree.css("a[href]"):
-                href = urljoin(str(response.url), a.attributes.get("href"))
-                if href.startswith(("http://", "https://")) and href != str(response.url):
-                    links.append({
-                        "title": a.text(strip=True)[:50] or "No title", 
-                        "url": href
-                    })
-            
-            unique_links = list({v['url']: v for v in links}.values())[:15]
+                href = urljoin(page_url, a.attributes.get("href"))
+                if href.startswith(("http://", "https://")) and href != page_url and href not in seen:
+                    seen.add(href)
+                    link_title = a.text(strip=True)[:50] or "No title"
+                    links_md_lines.append(f"- [{link_title}]({href})")
+                if len(links_md_lines) >= 15:
+                    break
 
-            meta_md = "\n".join([f"- **{k}**: {v}" for k, v in meta.items()]) if meta else "- No metadata found\n"
-            links_md = "\n".join([f"- [{link['title']}]({link['url']})" for link in unique_links]) if unique_links else "- No external URLs detected"
+            meta_md = "\n".join([f"- **{k}**: {v}" for k, v in meta.items()]) if meta else "- None\n"
+            links_md = "\n".join(links_md_lines) if links_md_lines else "- None"
 
             return {
-                "report": f"Title: {title}\n\nURL Source: {response.url}\n\nMeta Data: {meta_md}\n\nContent:\n{text}\n\nLinks:{links_md}"
-                }
+                "report": (
+                    f"Title: {title}\n\n"
+                    f"URL Source: {page_url}\n\n"
+                    f"Meta Data: {meta_md}\n\n"
+                    f"Content:\n{text}\n\n"
+                    f"Links:{links_md}"
+                )
+            }
 
         except httpx.HTTPStatusError as e:
             return {"error": f"HTTP {e.response.status_code} ({e.response.reason_phrase})", "url": url}
