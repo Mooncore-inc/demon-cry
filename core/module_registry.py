@@ -46,8 +46,8 @@ class ModuleRegistry:
             for obj in vars(mod).values():
                 if (
                     inspect.isclass(obj)
-                    and issubclass(obj, OSINTModule)
                     and obj is not OSINTModule
+                    and all(hasattr(obj, attr) for attr in ("name", "description", "parameters", "execute"))
                 ):
                     try:
                         await self.register(obj())
