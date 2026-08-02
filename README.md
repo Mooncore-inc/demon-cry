@@ -128,7 +128,6 @@ curl -X 'POST' \
 ## Документация
 
 - [Конфигурация](docs/configuration.md) — настройка `config.json`, провайдеры
-- [API](docs/api.md) — REST API, эндпоинты, формат запросов/ответов
 - [Docker](docs/docker.md) — Docker Compose, сборка, запуск
 - [SearXNG](docs/searxng.md) — метапоисковик, настройка
 - [Разработка](docs/development.md) — локальный запуск, добавление модулей
