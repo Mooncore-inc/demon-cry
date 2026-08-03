@@ -3,7 +3,7 @@ import inspect
 import logging
 import pkgutil
 from pathlib import Path
-from typing import Any, Dict, TypedDict
+from typing import Any, Dict, TypedDict, cast
 
 import modules as modules_pkg
 from modules.base_modules import OSINTModule
@@ -47,10 +47,13 @@ class ModuleRegistry:
                 if (
                     inspect.isclass(obj)
                     and obj is not OSINTModule
-                    and all(hasattr(obj, attr) for attr in ("name", "description", "parameters", "execute"))
+                    and all(
+                        hasattr(obj, attr)
+                        for attr in ("name", "description", "parameters", "execute")
+                    )
                 ):
                     try:
-                        await self.register(obj())
+                        await self.register(cast(OSINTModule, obj()))
                     except Exception:
                         logger.exception(f"Failed to instantiate {obj.__name__}")
 
