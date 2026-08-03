@@ -25,7 +25,7 @@ cp example_config.json config.json
 ```json
 {
     "base_url": "https://api.openai.com/v1",
-    "api_key": "sk-...",
+    "api_key": "sk-...", # pragma: allowlist secret
     "model": "gpt-4o"
 }
 ```
@@ -35,7 +35,7 @@ cp example_config.json config.json
 ```json
 {
     "base_url": "https://api.deepseek.com/v1",
-    "api_key": "sk-...",
+    "api_key": "sk-...", # pragma: allowlist secret
     "model": "deepseek-chat"
 }
 ```
@@ -45,7 +45,7 @@ cp example_config.json config.json
 ```json
 {
     "base_url": "http://localhost:11434/v1",
-    "api_key": "ollama",
+    "api_key": "ollama", # pragma: allowlist secret
     "model": "qwen3:32b"
 }
 ```
@@ -55,7 +55,7 @@ cp example_config.json config.json
 ```json
 {
     "base_url": "https://openrouter.ai/api/v1",
-    "api_key": "sk-or-...",
+    "api_key": "sk-or-...", # pragma: allowlist secret
     "model": "qwen/qwen3-32b"
 }
 ```
