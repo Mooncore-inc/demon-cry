@@ -27,11 +27,12 @@ class LLM:
             {"role": "system", "content": system_prompt_template},
             {"role": "user", "content": user_query}
             ]
+        tools_list = await registry.get_tools_schema()
         tools_used: list[dict] = []
         total_tokens_used = 0
 
         while True:
-            response_message, usage = await self._call_llm(messages)
+            response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list)
             total_tokens_used += usage.total_tokens
 
             if not response_message.tool_calls:
@@ -46,13 +47,13 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
-    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
+    async def _call_llm(self, messages: list[dict], tools_list: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             temperature=temperature,
-            tools=await registry.get_tools_schema(),
+            tools=tools_list,
             tool_choice="auto",
         )
 
