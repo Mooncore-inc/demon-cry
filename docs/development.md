@@ -8,6 +8,29 @@ pip install poetry
 poetry install
 ```
 
+## Pre-commit
+
+Проект использует [pre-commit](https://pre-commit.com/) для автоматической проверки кода перед коммитом.
+
+Активация хуков (один раз после clone):
+
+```bash
+poetry run pre-commit install
+```
+
+После этого при каждом `git commit` будут автоматически запускаться проверки:
+
+- trailing whitespace, end-of-file, смешанные окончания строк
+- отсутствие debug-остатков (`breakpoint`, `print` в production-коде)
+- проверка yaml/toml/json на валидность
+- поиск приватных ключей и секретов
+
+Запуск вручную по всем файлам:
+
+```bash
+poetry run pre-commit run --all-files
+```
+
 ## Запуск локально
 
 ```bash
