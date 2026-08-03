@@ -1,3 +1,10 @@
+"""Module for interacting with a Large Language Model (LLM).
+
+Provides an asynchronous client for sending queries to an LLM,
+processing tool calls, and managing the dialogue loop
+using an OpenAI-compatible API.
+"""
+
 import asyncio
 import json
 import logging
@@ -14,6 +21,16 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
 
 class LLM:
+    """Asynchronous client for working with a Large Language Model.
+
+    Manages the interaction loop with the LLM, including sending queries,
+    processing tool calls, and tracking token usage.
+
+    Attributes:
+        client: Asynchronous OpenAI-compatible API client.
+        model: Identifier of the model being used.
+    """
+
     def __init__(self):
         self.client = AsyncOpenAI(
             base_url=config.base_url,
@@ -27,11 +44,12 @@ class LLM:
             {"role": "system", "content": system_prompt_template},
             {"role": "user", "content": user_query}
             ]
+        tools_list = await registry.get_tools_schema()
         tools_used: list[dict] = []
         total_tokens_used = 0
 
         while True:
-            response_message, usage = await self._call_llm(messages)
+            response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list)
             total_tokens_used += usage.total_tokens
 
             if not response_message.tool_calls:
@@ -46,13 +64,18 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
-    async def _call_llm(self, messages: list[dict], temperature: float = 0.3) -> tuple[Any, Any]:
+    async def _call_llm(
+            self,
+            messages: list[dict],
+            tools_list: list[dict],
+            temperature: float = 0.3
+        ) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
             model=self.model,
             messages=messages,
             temperature=temperature,
-            tools=await registry.get_tools_schema(),
+            tools=tools_list,
             tool_choice="auto",
         )
 

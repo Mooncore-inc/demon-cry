@@ -48,8 +48,8 @@ networks:
 ```json
 {
     "base_url": "https://api.openai.com/v1",
-    "master_key": "secret",
-    "api_key": "sk-...",
+    "master_key": "secret", # pragma: allowlist secret
+    "api_key": "sk-...", # pragma: allowlist secret
     "model": "gpt-4o",
     "searxng_url": "http://searxng:8080"
 }
@@ -89,15 +89,15 @@ engines:
   - name: bing
     disabled: false
     weight: 1.5
-  
+
   - name: qwant
     disabled: false
     weight: 1.2
-  
+
   - name: yandex
     disabled: false
     weight: 1.0
-  
+
   - name: wikipedia
     disabled: false
     weight: 0.8

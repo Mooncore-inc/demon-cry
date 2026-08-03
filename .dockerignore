@@ -25,3 +25,4 @@ flake.nix
 flake.lock
 module.nix
 package.nix
+.pre-commit-config.yaml
