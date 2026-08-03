@@ -4,6 +4,7 @@ Demon Cry — это автономный OSINT-агент, который ис�
 
 [![License: MPL2](https://img.shields.io/badge/License-MPL2-red.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-red.svg)](https://www.python.org/downloads/)
+[![Docker Release](https://github.com/Mooncore-inc/demon-cry/actions/workflows/docker-release.yml/badge.svg)](https://github.com/Mooncore-inc/demon-cry/actions/workflows/docker-release.yml)
 
 ## Быстрый старт (Рекомендуется)
 
