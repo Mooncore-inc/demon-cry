@@ -30,7 +30,7 @@ class ModuleRegistry:
     async def register(self, module: OSINTModule):
         """Регистрирует модуль"""
         self.modules[module.name] = module
-        logger.info(f"Registered module: {module.name}")
+        logger.info("Registered module: %s", module.name)
 
     async def discover(self):
         """Автоматически находит и регистрирует все модули в папке modules/"""
@@ -41,7 +41,7 @@ class ModuleRegistry:
             try:
                 mod = importlib.import_module(f"modules.{module_name}")
             except Exception:
-                logger.exception(f"Failed to import modules.{module_name}")
+                logger.exception("Failed to import modules.%s", module_name)
                 continue
             for obj in vars(mod).values():
                 if (
@@ -55,7 +55,7 @@ class ModuleRegistry:
                     try:
                         await self.register(cast(OSINTModule, obj()))
                     except Exception:
-                        logger.exception(f"Failed to instantiate {obj.__name__}")
+                        logger.exception("Failed to instantiate %s", obj.__name__)
 
     async def get_tools_schema(self) -> list[ToolDefinition]:
         """Возвращает JSON Schema всех модулей для ИИ"""

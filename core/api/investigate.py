@@ -32,5 +32,5 @@ async def investigate(req: OSINTRequest):
             tokens=tokens,
         )
     except Exception as e:
-        logger.error(f"Investigation failed: {e}")
+        logger.error("Investigation failed: %s", e)
         return OSINTResponse(status="error", result="ошибка")

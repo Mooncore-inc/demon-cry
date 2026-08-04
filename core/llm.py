@@ -111,14 +111,14 @@ class LLM:
             tool_choice="auto",
         )
 
-        logger.info(f"Tokens used: {completion.usage}")
+        logger.info("Tokens used: %s", completion.usage)
         return completion.choices[0].message, completion.usage
 
     async def _process_tool_calls(self, tool_calls: list, messages: list[dict]):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
 
         async def execute_single(tool_call):
-            logger.info(f"Tool call: {tool_call.function.name}")
+            logger.info("Tool call: %s", tool_call.function.name)
             result = await self._execute_tool(tool_call)
 
             return {
@@ -139,7 +139,7 @@ class LLM:
                 return {"error": f"Tool '{name}' not found"}
             return await registry.execute(name, **args)
         except Exception as e:
-            logger.exception(f"Error during tool execution {name}")
+            logger.exception("Error during tool execution %s", name)
             return {"error": str(e)}
 
 llm = LLM()

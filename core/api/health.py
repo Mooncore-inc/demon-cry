@@ -25,5 +25,5 @@ async def health():
         return HealthResponse(status="ok", latency_ms=latency_ms)
     except Exception as e:
         latency_ms = round((time.perf_counter() - start) * 1000)
-        logger.error(f"health err: {e}")
+        logger.error("health err: %s", e)
         return HealthResponse(status="error", latency_ms=latency_ms)
