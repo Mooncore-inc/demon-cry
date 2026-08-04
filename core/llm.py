@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from openai import AsyncOpenAI
+from pydantic import BaseModel
 from core.config import config
 from core.module_registry import registry
 
@@ -19,6 +20,36 @@ logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
+
+class TokenUsage(BaseModel):
+    total: int = 0
+    prompt: int = 0
+    completion: int = 0
+    reasoning: int = 0
+    cache_hit: int = 0
+    cache_miss: int = 0
+
+    def __add__(self, other):
+        return TokenUsage(
+            total=self.total + other.total,
+            prompt=self.prompt + other.prompt,
+            completion=self.completion + other.completion,
+            reasoning=self.reasoning + other.reasoning,
+            cache_hit=self.cache_hit + other.cache_hit,
+            cache_miss=self.cache_miss + other.cache_miss,
+        )
+
+    @classmethod
+    def from_usage(cls, usage) -> "TokenUsage":
+        return cls(
+            total=usage.total_tokens,
+            prompt=usage.prompt_tokens,
+            completion=usage.completion_tokens,
+            reasoning=(usage.completion_tokens_details.reasoning_tokens or 0) if usage.completion_tokens_details else 0,
+            cache_hit=usage.prompt_cache_hit_tokens or 0,
+            cache_miss=usage.prompt_cache_miss_tokens or 0,
+        )
+
 
 class LLM:
     """Asynchronous client for working with a Large Language Model.
@@ -38,7 +69,7 @@ class LLM:
         )
         self.model = config.model
 
-    async def run_chain(self, user_query: str) -> tuple[str | None, list[dict], int]:
+    async def run_chain(self, user_query: str) -> tuple[str | None, list[dict], TokenUsage]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         messages = [
             {"role": "system", "content": system_prompt_template},
@@ -46,14 +77,15 @@ class LLM:
             ]
         tools_list = await registry.get_tools_schema()
         tools_used: list[dict] = []
-        total_tokens_used = 0
+        tokens = TokenUsage()
 
         while True:
             response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list)
-            total_tokens_used += usage.total_tokens
+
+            tokens += TokenUsage.from_usage(usage)
 
             if not response_message.tool_calls:
-                return response_message.content, tools_used, total_tokens_used
+                return response_message.content, tools_used, tokens
 
             for tc in response_message.tool_calls:
                 tools_used.append({

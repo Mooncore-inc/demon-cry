@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from core.auth import verify_master_key
-from core.llm import llm
+from core.llm import llm, TokenUsage
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ class OSINTResponse(BaseModel):
     status: str
     result: str
     tools_used: list[dict] = []
-    total_tokens: int = 0
+    tokens: TokenUsage = TokenUsage()
 
 @router.post(path="/investigate", dependencies=[Depends(verify_master_key)])
 async def investigate(req: OSINTRequest):
@@ -25,7 +25,12 @@ async def investigate(req: OSINTRequest):
         res, tools, tokens = await llm.run_chain(
             user_query=req.target
         )
-        return OSINTResponse(status="success", result=res, tools_used=tools, total_tokens=tokens)
+        return OSINTResponse(
+            status="success",
+            result=res,
+            tools_used=tools,
+            tokens=tokens,
+        )
     except Exception as e:
         logger.error(f"Investigation failed: {e}")
         return OSINTResponse(status="error", result="ошибка")
