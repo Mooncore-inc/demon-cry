@@ -20,11 +20,11 @@ HEADERS = {
 
 class ParseWebsite(OSINTModule):
     name: str = "parse_website"
-    description: str = "Loads a web page, extracts metadata, main text, and absolute links. Handles redirects and bad SSL."
+    description: str = "Parse web page: extract text, links, metadata. Handles redirects"
     parameters: dict = {
         "type": "object",
         "properties": {
-            "url": {"type": "string", "description": "URL of the page to parse"}
+            "url": {"type": "string", "description": "URL to parse"}
         },
         "required": ["url"]
     }
