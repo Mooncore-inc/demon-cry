@@ -11,6 +11,7 @@ dependencies = [
     "pydantic",
     "uvicorn[standard]",
     "selectolax (>=0.4.11,<0.5.0)",
+    "aiodns (>=4.0.4,<5.0.0)",
 ]
 
 [dependency-groups]
