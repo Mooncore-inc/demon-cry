@@ -4,14 +4,9 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     flake-utils.url = "github:numtide/flake-utils";
-
-    demon-cry-src = {
-      url = "github:Mooncore-inc/demon-cry";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, demon-cry-src }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -19,7 +14,7 @@
         };
 
         demon-cry = pkgs.callPackage ./package.nix {
-          src = demon-cry-src;
+          src = self;
         };
       in
       {

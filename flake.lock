@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "demon-cry-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785418615,
-        "narHash": "sha256-MizypPkzjPaIBURw5e+Fv1NkIiYDERCUif3ByUMjk28=",
-        "owner": "Mooncore-inc",
-        "repo": "demon-cry",
-        "rev": "1d050b5ec16f711c39c097a610a7b1810a718638",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Mooncore-inc",
-        "repo": "demon-cry",
-        "type": "github"
-      }
-    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -36,11 +20,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1785386831,
-        "narHash": "sha256-sPS3CaXH8RAT3FZRuy4VcV47iuYIWMMfa0GbyJKC3o4=",
+        "lastModified": 1785989512,
+        "narHash": "sha256-HFQhkQcl5D1hUNoen3SGHCSFCt2Bg6uP+HgbrnA3InQ=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "21ea275a7c46aef9d4d6ddc962e6d562e9d94183",
+        "rev": "445d861c6d31b4af0c79d8d4be2331f762a361d7",
         "type": "github"
       },
       "original": {
@@ -52,7 +36,6 @@
     },
     "root": {
       "inputs": {
-        "demon-cry-src": "demon-cry-src",
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs"
       }
