@@ -78,6 +78,7 @@ from modules.base_modules import OSINTModule
 class MyTool(OSINTModule):
     name = "my_tool"
     description = "Описание инструмента для LLM"
+    category = "search"  # network / content / search
     parameters = {
         "type": "object",
         "properties": {

@@ -6,22 +6,23 @@ from core.config import config
 
 class WebSearch(OSINTModule):
     name: str = "web_search"
-    description: str = "Searches the web via SearXNG. Supports Google dorks (site:, filetype:, intitle:, inurl:), categories and time ranges."
+    description: str = "Search web via SearXNG. Supports Google dorks (site:, filetype:)"
+    category: str = "search"
     parameters: dict = {
         "type": "object",
         "properties": {
-            "query": {"type": "string", "description": "Search query. Supports Google dorks syntax."},
+            "query": {"type": "string", "description": "Search query (supports Google dorks)"},
             "category": {
                 "type": "string",
                 "enum": ["general", "images", "files", "it", "social media", "news"],
                 "default": "general",
-                "description": "Category to search in. Use 'files' for documents, 'images' for pictures."
+                "description": "Search category"
             },
             "time_range": {
                 "type": "string",
                 "enum": ["day", "week", "month", "year", "all"],
                 "default": "all",
-                "description": "Time filter for the search results."
+                "description": "Time filter"
             }
         },
         "required": ["query"]
