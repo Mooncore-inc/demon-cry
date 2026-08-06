@@ -111,6 +111,66 @@ docker compose up -d
 
 </details>
 
+## NixOS (flake)
+<details>
+<summary>Нажмите, чтобы открыть</summary>
+
+Разовый запуск (нужен `config.json` в текущей директории):
+
+```bash
+nix run github:Mooncore-inc/demon-cry -- --host 0.0.0.0 --port 8000
+```
+
+Как NixOS-модуль — добавьте flake в inputs:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
+    demon-cry.url = "github:Mooncore-inc/demon-cry";
+  };
+
+  outputs = { nixpkgs, demon-cry, ... }: {
+    nixosConfigurations.myhost = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        demon-cry.nixosModules.default
+        ./configuration.nix
+      ];
+    };
+  };
+}
+```
+
+И включите сервис в конфигурации хоста:
+
+```nix
+{
+  services.demon-cry = {
+    enable = true;
+
+    settings = {
+      base_url = "https://api.openai.com/v1";
+      model = "gpt-4o";
+    };
+
+    apiKeyFile = "/run/secrets/demon-cry-api-key";
+    masterKeyFile = "/run/secrets/demon-cry-master-key";
+
+    searx.enable = true;  # поднимет локальный SearXNG и укажет на него агента
+  };
+
+  # файл вида: SEARXNG_SECRET=<openssl rand -hex 32>
+  services.searx.environmentFile = "/run/secrets/searx-env";
+}
+```
+
+Ключи не попадают в nix store: сервис получает их через systemd `LoadCredential` и подставляет в `config.json` при старте.
+
+Полный список опций, работа с sops-nix/agenix и dev-shell — в [Nix / NixOS](docs/nix.md).
+
+</details>
+
 ## Использование
 
 Swagger: http://localhost:8000/docs
@@ -130,6 +190,7 @@ curl -X 'POST' \
 
 - [Конфигурация](docs/configuration.md) — настройка `config.json`, провайдеры
 - [Docker](docs/docker.md) — Docker Compose, сборка, запуск
+- [Nix / NixOS](docs/nix.md) — flake, NixOS-модуль, секреты, dev-shell
 - [SearXNG](docs/searxng.md) — метапоисковик, настройка
 - [Разработка](docs/development.md) — локальный запуск, добавление модулей
 
