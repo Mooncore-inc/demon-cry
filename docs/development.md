@@ -39,6 +39,7 @@ cp example_config.json config.json  # настроить base_url, api_key, mode
 # Запускает только зависимости (SearXNG)
 docker compose -f docker-compose-dev.yml up -d
 
+# Запуск веб-сервера
 poetry run uvicorn core.__main__:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -66,7 +67,7 @@ curl 'http://localhost:8080/search?q=test&format=json'
 
 ## Добавление своего модуля
 
-Все OSINT-инструменты наследуются от `OSINTModule` из `modules/base_modules.py`. Для создания нового модуля:
+Все **OSINT-инструменты наследуются** от `OSINTModule` из `modules/base_modules.py`. Для создания нового модуля:
 
 1. Создайте файл в `modules/`, например `modules/my_tool.py`
 2. Наследуйтесь от `OSINTModule` и реализуйте интерфейс:
