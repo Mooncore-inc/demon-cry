@@ -21,6 +21,7 @@ HEADERS = {
 class ParseWebsite(OSINTModule):
     name: str = "parse_website"
     description: str = "Parse web page: extract text, links, metadata. Handles redirects"
+    category: str = "content"
     parameters: dict = {
         "type": "object",
         "properties": {

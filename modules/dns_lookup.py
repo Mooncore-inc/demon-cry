@@ -24,6 +24,7 @@ RECORD_FIELDS = {
 class DnsLookup(OSINTModule):
     name = "dns_lookup"
     description = "finds DNS records"
+    category = "network"
     parameters = {
         "type": "object",
         "properties": {

@@ -65,7 +65,7 @@ class ModuleRegistry:
                 "type": "function",
                 "function": {
                     "name": module.name,
-                    "description": module.description,
+                    "description": f"[Category: {module.category}] {module.description}",
                     "parameters": module.parameters
                 }
             })

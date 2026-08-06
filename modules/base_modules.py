@@ -6,6 +6,7 @@ class OSINTModule(Protocol):
 
     name: str
     description: str
+    category: str
     parameters: dict
 
     async def execute(self, **_kwargs) -> dict:
