@@ -194,6 +194,14 @@ curl -X 'POST' \
 - [SearXNG](docs/searxng.md) — метапоисковик, настройка
 - [Разработка](docs/development.md) — локальный запуск, добавление модулей
 
+## Контрибьюторы
+
+Спасибо нашим контрибьюторам! ❤️
+
+<a href="https://github.com/Mooncore-inc/demon-cry/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Mooncore-inc/demon-cry&columns=25&max=500" />
+</a>
+
 ## Лицензия
 
 Mozilla Public License 2.0
