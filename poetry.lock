@@ -1769,4 +1769,4 @@ httpx = ">=0.28.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <3.15"
-content-hash = "1aba200f121b74e5acc24936cf2c80817aab1aa257e772d7451d52d093e849c9"
+content-hash = "004bc4b28d2d79d4b43f93a24a426e80d4cc932f16f8003cc1ccabfc7cb89f0f"
