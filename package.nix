@@ -3,6 +3,7 @@
 let
   pythonEnv = python312.withPackages (ps: [
     ps.aiodns
+    ps.asyncwhois
     ps.fastapi
     ps.openai
     ps.httpx
