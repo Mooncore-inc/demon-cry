@@ -12,6 +12,7 @@ dependencies = [
     "uvicorn[standard]",
     "selectolax (>=0.4.7,<0.5.0)",
     "aiodns (>=4.0.4,<5.0.0)",
+    "asyncwhois (>=1.1.12,<2.0.0)",
 ]
 
 [dependency-groups]
