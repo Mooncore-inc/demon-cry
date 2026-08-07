@@ -60,8 +60,8 @@ class DnsLookup(OSINTModule):
                     values = [str(getattr(rec.data, f, "")) for f in fields]
                     lines.append(f"| {qtype} | {', '.join(values)} |")
             else:
-                lines.append(f"| {qtype} | Нет записей |")
+                lines.append(f"| {qtype} | No records |")
 
-        table = f"| Тип | Значение |\n|---|---|\n" + "\n".join(lines)
+        table = f"| Type | Value |\n|---|---|\n" + "\n".join(lines)
 
         return {"result": table}
