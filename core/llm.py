@@ -119,7 +119,11 @@ class LLM:
 
         async def execute_single(tool_call):
             logger.info("Tool call: %s", tool_call.function.name)
-            result = await self._execute_tool(tool_call)
+
+            name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+
+            result = await registry.execute(name, **args)
 
             return {
                 "role": "tool",
@@ -129,17 +133,5 @@ class LLM:
 
         results = await asyncio.gather(*(execute_single(tc) for tc in tool_calls))
         messages.extend(results)
-
-    async def _execute_tool(self, tool_call) -> dict:
-        """Парсит аргументы и выполняет инструмент."""
-        name = tool_call.function.name
-        try:
-            args = json.loads(tool_call.function.arguments)
-            if name not in registry.modules:
-                return {"error": f"Tool '{name}' not found"}
-            return await registry.execute(name, **args)
-        except Exception as e:
-            logger.exception("Error during tool execution %s", name)
-            return {"error": str(e)}
 
 llm = LLM()

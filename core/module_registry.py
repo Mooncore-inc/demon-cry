@@ -72,11 +72,12 @@ class ModuleRegistry:
         return tools
 
     async def execute(self, tool_name: str, **kwargs) -> dict:
-        """Выполняет модуль по имени"""
         if tool_name not in self.modules:
             return {"error": f"Unknown module: {tool_name}"}
-
-        module = self.modules[tool_name]
-        return await module.execute(**kwargs)
+        try:
+            return await self.modules[tool_name].execute(**kwargs)
+        except Exception as e:
+            logger.exception("Error during execution of %s", tool_name)
+            return {"error": str(e)}
 
 registry = ModuleRegistry()
