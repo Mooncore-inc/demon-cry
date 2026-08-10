@@ -41,13 +41,14 @@ class TokenUsage(BaseModel):
 
     @classmethod
     def from_usage(cls, usage) -> "TokenUsage":
+        details = getattr(usage, "completion_tokens_details", None)
         return cls(
             total=usage.total_tokens,
             prompt=usage.prompt_tokens,
             completion=usage.completion_tokens,
-            reasoning=(usage.completion_tokens_details.reasoning_tokens or 0) if usage.completion_tokens_details else 0,
-            cache_hit=usage.prompt_cache_hit_tokens or 0,
-            cache_miss=usage.prompt_cache_miss_tokens or 0,
+            reasoning=getattr(details, "reasoning_tokens", 0),
+            cache_hit=getattr(usage, 'prompt_cache_hit_tokens', 0),
+            cache_miss=getattr(usage, 'prompt_cache_miss_tokens', 0),
         )
 
 
