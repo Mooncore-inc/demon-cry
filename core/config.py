@@ -7,6 +7,7 @@ import json
 class Config:
     base_url: str
     master_key: str
+    iteration_limit: int
     api_key: str
     model: str
     searxng_url: str = "http://searxng:8080"

@@ -21,6 +21,8 @@ echo -e "${GREEN}Step 1: LLM Configuration${NC}"
 read -p "Enter your LLM Provider Base URL (e.g., https://api.deepseek.com/v1): " BASE_URL
 read -p "Enter your API Key: (e.g., sk-...)" API_KEY
 read -p "Enter Model Name (e.g., deepseek-v4-flash): " MODEL
+read -p "Enter Max Iterations (leave empty for default 150): " ITER_LIMIT
+ITER_LIMIT=${ITER_LIMIT:-150}
 
 # Мастер ключ
 echo ""
@@ -41,6 +43,7 @@ cat > config.json <<EOF
 {
     "base_url": "$BASE_URL",
     "master_key": "$MASTER_KEY",
+    "iteration_limit": $ITER_LIMIT,
     "api_key": "$API_KEY",
     "model": "$MODEL",
     "searxng_url": "http://searxng:8080"

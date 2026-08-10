@@ -79,8 +79,10 @@ class LLM:
         tools_used: list[dict] = []
         tokens = TokenUsage()
 
-        while True:
-            response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list)
+        for i in range(config.iteration_limit):
+            tool_choice = "none" if i == config.iteration_limit - 1 else "auto"
+
+            response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list, tool_choice=tool_choice)
 
             tokens += TokenUsage.from_usage(usage)
 
@@ -100,6 +102,7 @@ class LLM:
             self,
             messages: list[dict],
             tools_list: list[dict],
+            tool_choice: str,
             temperature: float = 0.3
         ) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
@@ -108,7 +111,7 @@ class LLM:
             messages=messages,
             temperature=temperature,
             tools=tools_list,
-            tool_choice="auto",
+            tool_choice=tool_choice,
         )
 
         logger.info("Tokens used: %s", completion.usage)
