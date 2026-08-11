@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from core.auth import verify_master_key
-from core.llm import LLM, TokenUsage
+from core.llm import TokenUsage
 from core.dependencies import get_llm
 
 router = APIRouter()
@@ -23,7 +23,7 @@ class OSINTResponse(BaseModel):
 @router.post(path="/investigate", dependencies=[Depends(verify_master_key)])
 async def investigate(
     req: OSINTRequest,
-    llm: LLM = Depends(get_llm)
+    llm = Depends(get_llm)
     ):
     try:
         res, tools, tokens = await llm.run_chain(
