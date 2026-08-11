@@ -30,18 +30,21 @@ class DnsLookup(OSINTModule):
         "properties": {
             "domain": {"type": "string", "description": "Domain to lookup"},
             "record_type": {
-                "type": "string",
-                "enum": list(RECORD_FIELDS.keys()),
-                "default": "A",
-                "description": "Record type(s), comma-separated for multiple (e.g. A,MX,NS)"
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": list(RECORD_FIELDS.keys())
+                },
+                "default": ["A"],
+                "description": "Record types to query (e.g. [\"A\", \"MX\", \"NS\"])"
             }
         },
         "required": ["domain"]
     }
 
-    async def execute(self, domain: str, record_type: str = "A") -> dict:
+    async def execute(self, domain: str, record_type: list[str] | None = None) -> dict:
         resolver = aiodns.DNSResolver(nameservers=NAME_SERVERS)
-        types = [t.strip().upper() for t in record_type.split(",")]
+        types = [t.upper() for t in (record_type or ["A"])]
 
         async def query_one(qtype: str):
             try:

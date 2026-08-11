@@ -8,18 +8,15 @@ using an OpenAI-compatible API.
 import asyncio
 import json
 import logging
-from pathlib import Path
 from typing import Any
 
 from openai import AsyncOpenAI
 from pydantic import BaseModel
-from core.config import config
-from core.module_registry import registry
+
+from core.config import Config
+from core.module_registry import ModuleRegistry
 
 logger = logging.getLogger(__name__)
-
-PROMPTS_DIR = Path(__file__).parent / "prompts"
-system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
 
 class TokenUsage(BaseModel):
     total: int = 0
@@ -31,23 +28,24 @@ class TokenUsage(BaseModel):
 
     def __add__(self, other):
         return TokenUsage(
-            total=self.total + other.total,
-            prompt=self.prompt + other.prompt,
-            completion=self.completion + other.completion,
-            reasoning=self.reasoning + other.reasoning,
-            cache_hit=self.cache_hit + other.cache_hit,
-            cache_miss=self.cache_miss + other.cache_miss,
+            total = self.total + other.total,
+            prompt = self.prompt + other.prompt,
+            completion = self.completion + other.completion,
+            reasoning = self.reasoning + other.reasoning,
+            cache_hit = self.cache_hit + other.cache_hit,
+            cache_miss = self.cache_miss + other.cache_miss,
         )
 
     @classmethod
     def from_usage(cls, usage) -> "TokenUsage":
+        details = getattr(usage, "completion_tokens_details", None)
         return cls(
-            total=usage.total_tokens,
-            prompt=usage.prompt_tokens,
-            completion=usage.completion_tokens,
-            reasoning=(usage.completion_tokens_details.reasoning_tokens or 0) if usage.completion_tokens_details else 0,
-            cache_hit=usage.prompt_cache_hit_tokens or 0,
-            cache_miss=usage.prompt_cache_miss_tokens or 0,
+            total = usage.total_tokens,
+            prompt = usage.prompt_tokens,
+            completion = usage.completion_tokens,
+            reasoning = getattr(details, "reasoning_tokens", 0),
+            cache_hit = getattr(usage, 'prompt_cache_hit_tokens', 0),
+            cache_miss = getattr(usage, 'prompt_cache_miss_tokens', 0),
         )
 
 
@@ -62,25 +60,28 @@ class LLM:
         model: Identifier of the model being used.
     """
 
-    def __init__(self):
+    def __init__(self, config: Config, registry: ModuleRegistry, system_prompt: str):
         self.client = AsyncOpenAI(
-            base_url=config.base_url,
-            api_key=config.api_key,
+            base_url = config.base_url,
+            api_key = config.api_key
         )
         self.model = config.model
+        self.config = config
+        self.registry = registry
+        self.system_prompt = system_prompt
 
     async def run_chain(self, user_query: str) -> tuple[str | None, list[dict], TokenUsage]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         messages = [
-            {"role": "system", "content": system_prompt_template},
+            {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_query}
             ]
-        tools_list = await registry.get_tools_schema()
+        tools_list = await self.registry.get_tools_schema()
         tools_used: list[dict] = []
         tokens = TokenUsage()
 
-        for i in range(config.iteration_limit):
-            tool_choice = "none" if i == config.iteration_limit - 1 else "auto"
+        for i in range(self.config.iteration_limit):
+            tool_choice = "none" if i == self.config.iteration_limit - 1 else "auto"
 
             response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list, tool_choice=tool_choice)
 
@@ -107,11 +108,11 @@ class LLM:
         ) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=temperature,
-            tools=tools_list,
-            tool_choice=tool_choice,
+            model = self.model,
+            messages = messages,
+            temperature = temperature,
+            tools = tools_list,
+            tool_choice = tool_choice,
         )
 
         logger.info("Tokens used: %s", completion.usage)
@@ -126,7 +127,7 @@ class LLM:
             name = tool_call.function.name
             args = json.loads(tool_call.function.arguments)
 
-            result = await registry.execute(name, **args)
+            result = await self.registry.execute(name, **args)
 
             return {
                 "role": "tool",
@@ -136,5 +137,3 @@ class LLM:
 
         results = await asyncio.gather(*(execute_single(tc) for tc in tool_calls))
         messages.extend(results)
-
-llm = LLM()
