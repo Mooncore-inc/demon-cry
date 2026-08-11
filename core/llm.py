@@ -13,6 +13,9 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from core.config import Config
+from core.module_registry import ModuleRegistry
+
 logger = logging.getLogger(__name__)
 
 class TokenUsage(BaseModel):
