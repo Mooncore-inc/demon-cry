@@ -29,6 +29,13 @@ async def investigate(
         res, tools, tokens = await llm.run_chain(
             user_query=req.target
         )
+        if res is None:
+            return OSINTResponse(
+                status="error",
+                result="Модель не завершила работу за отведённые итерации",
+                tools_used=tools,
+                tokens=tokens,
+            )
         return OSINTResponse(
             status="success",
             result=res,

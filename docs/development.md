@@ -95,3 +95,31 @@ class MyTool(OSINTModule):
 ```
 
 Модуль автоматически зарегистрируется при старте приложения благодаря `ModuleRegistry.discover()`.
+
+## Тесты
+
+Проект использует [pytest](https://docs.pytest.org/) и [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) для тестирования асинхронного кода.
+
+### Запуск всех тестов
+
+```bash
+poetry run pytest
+```
+
+### Запуск конкретного файла
+
+```bash
+poetry run pytest tests/test_llm.py -v
+```
+
+### Структура тестов
+
+```
+tests/
+  __init__.py
+  test_llm.py    # Тесты для core/llm.py
+```
+
+Тесты используют моки (фейковые объекты) вместо реальных вызовов OpenAI API. Это делает их быстрыми и предсказуемыми — никаких сетевых запросов и траты денег на API.
+
+Подробнее о каждом тесте: [docs/tests.md](tests.md).

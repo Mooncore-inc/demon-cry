@@ -99,6 +99,8 @@ class LLM:
             messages.append(response_message)
             await self._process_tool_calls(response_message.tool_calls, messages)
 
+        return None, tools_used, tokens
+
     async def _call_llm(
             self,
             messages: list[dict],
