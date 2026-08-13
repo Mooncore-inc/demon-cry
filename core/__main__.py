@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    registry.modules_dir = "modules"
     await registry.discover()
     yield
 
