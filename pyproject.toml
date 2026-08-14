@@ -10,7 +10,6 @@ dependencies = [
     "httpx",
     "pydantic",
     "uvicorn[standard]",
-    "selectolax (>=0.4.7,<0.5.0)",
     "demon-cry-base (>=0.1.0,<0.2.0)",
 ]
 
