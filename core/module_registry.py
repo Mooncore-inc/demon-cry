@@ -1,12 +1,10 @@
-import importlib
-import inspect
+import json
 import logging
-import pkgutil
+from importlib.metadata import entry_points
 from pathlib import Path
-from typing import Any, Dict, TypedDict, cast
+from typing import Any, Dict, TypedDict
 
-import modules as modules_pkg
-from modules.base_modules import OSINTModule
+from demon_cry_base import BaseModule
 
 
 class ToolFunction(TypedDict):
@@ -21,44 +19,27 @@ class ToolDefinition(TypedDict):
 
 logger = logging.getLogger(__name__)
 
-EXCLUDE = {"base_modules", "__init__"}
 
 class ModuleRegistry:
-    def __init__(self):
-        self.modules: Dict[str, OSINTModule] = {}
+    def __init__(self, modules_dir: str = "modules"):
+        self.modules: Dict[str, BaseModule] = {}
+        self.modules_dir = modules_dir
 
-    async def register(self, module: OSINTModule):
-        """Регистрирует модуль"""
+    async def register(self, module: BaseModule):
         self.modules[module.name] = module
         logger.info("Registered module: %s", module.name)
 
     async def discover(self):
-        """Автоматически находит и регистрирует все модули в папке modules/"""
-        pkg_path = Path(modules_pkg.__file__).parent
-        for _, module_name, _ in pkgutil.iter_modules([str(pkg_path)]):
-            if module_name in EXCLUDE:
-                continue
+        eps = entry_points(group="demon_cry.modules")
+        for ep in eps:
             try:
-                mod = importlib.import_module(f"modules.{module_name}")
+                module_class = ep.load()
+                instance = module_class()
+                await self.register(instance)
             except Exception:
-                logger.exception("Failed to import modules.%s", module_name)
-                continue
-            for obj in vars(mod).values():
-                if (
-                    inspect.isclass(obj)
-                    and obj is not OSINTModule
-                    and all(
-                        hasattr(obj, attr)
-                        for attr in ("name", "description", "parameters", "execute")
-                    )
-                ):
-                    try:
-                        await self.register(cast(OSINTModule, obj()))
-                    except Exception:
-                        logger.exception("Failed to instantiate %s", obj.__name__)
+                logger.exception("Failed to load module: %s", ep.name)
 
     async def get_tools_schema(self) -> list[ToolDefinition]:
-        """Возвращает JSON Schema всех модулей для ИИ"""
         tools: list[ToolDefinition] = []
         for module in self.modules.values():
             tools.append({
@@ -75,9 +56,17 @@ class ModuleRegistry:
         if tool_name not in self.modules:
             return {"error": f"Unknown module: {tool_name}"}
         try:
-            return await self.modules[tool_name].execute(**kwargs)
+            config = self._load_config(tool_name)
+            return await self.modules[tool_name].execute(config=config, **kwargs)
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}
+
+    def _load_config(self, module_name: str) -> dict:
+        config_path = Path(self.modules_dir) / module_name / "config.json"
+        if config_path.exists():
+            return json.loads(config_path.read_text())
+        return {}
+
 
 registry = ModuleRegistry()

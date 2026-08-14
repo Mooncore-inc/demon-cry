@@ -10,9 +10,7 @@ dependencies = [
     "httpx",
     "pydantic",
     "uvicorn[standard]",
-    "selectolax (>=0.4.7,<0.5.0)",
-    "aiodns (>=4.0.4,<5.0.0)",
-    "asyncwhois (>=1.1.12,<2.0.0)",
+    "demon-cry-base (>=0.1.0,<0.2.0)",
 ]
 
 [dependency-groups]
@@ -25,6 +23,7 @@ dev = [
 [tool.poetry]
 package-mode = false
 
+[tool.poetry.dependencies]
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

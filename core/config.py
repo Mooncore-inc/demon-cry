@@ -10,7 +10,6 @@ class Config:
     iteration_limit: int
     api_key: str
     model: str
-    searxng_url: str = "http://searxng:8080"
 
     def __init__(self, config_file_path) -> None:
         try:
