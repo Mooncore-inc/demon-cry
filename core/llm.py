@@ -49,6 +49,35 @@ class TokenUsage(BaseModel):
         )
 
 
+class ToolCall(BaseModel):
+    name: str
+    arguments: dict = {}
+    result: Any = None
+    status: str = "success"
+
+
+class ToolUsage(BaseModel):
+    calls: list[ToolCall] = []
+
+    def __add__(self, other):
+        return ToolUsage(calls=self.calls + other.calls)
+
+    def append(self, call: ToolCall):
+        self.calls.append(call)
+
+    def add_from_tool_call(self, tc, result) -> ToolCall:
+        args = json.loads(tc.function.arguments)
+        is_error = isinstance(result, dict) and "error" in result
+        call = ToolCall(
+            name=tc.function.name,
+            arguments=args,
+            result=result,
+            status="error" if is_error else "success",
+        )
+        self.calls.append(call)
+        return call
+
+
 class LLM:
     """Asynchronous client for working with a Large Language Model.
 
@@ -70,14 +99,14 @@ class LLM:
         self.registry = registry
         self.system_prompt = system_prompt
 
-    async def run_chain(self, user_query: str) -> tuple[str | None, list[dict], TokenUsage]:
+    async def run_chain(self, user_query: str) -> tuple[str | None, ToolUsage, TokenUsage]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         messages = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_query}
             ]
         tools_list = await self.registry.get_tools_schema()
-        tools_used: list[dict] = []
+        tools_used = ToolUsage()
         tokens = TokenUsage()
 
         for i in range(self.config.iteration_limit):
@@ -90,14 +119,8 @@ class LLM:
             if not response_message.tool_calls:
                 return response_message.content, tools_used, tokens
 
-            for tc in response_message.tool_calls:
-                tools_used.append({
-                    "name": tc.function.name,
-                    "arguments": json.loads(tc.function.arguments),
-                })
-
             messages.append(response_message)
-            await self._process_tool_calls(response_message.tool_calls, messages)
+            await self._process_tool_calls(response_message.tool_calls, messages, tools_used)
 
         return None, tools_used, tokens
 
@@ -120,7 +143,7 @@ class LLM:
         logger.info("Tokens used: %s", completion.usage)
         return completion.choices[0].message, completion.usage
 
-    async def _process_tool_calls(self, tool_calls: list, messages: list[dict]):
+    async def _process_tool_calls(self, tool_calls: list, messages: list[dict], tools_used: ToolUsage):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
 
         async def execute_single(tool_call):
@@ -130,6 +153,8 @@ class LLM:
             args = json.loads(tool_call.function.arguments)
 
             result = await self.registry.execute(name, **args)
+
+            tools_used.add_from_tool_call(tool_call, result)
 
             return {
                 "role": "tool",

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from core.llm import LLM, TokenUsage
+from core.llm import LLM, TokenUsage, ToolUsage
 
 
 # --- Mock helpers for OpenAI response objects ---
@@ -122,7 +122,7 @@ async def test_run_chain_no_tools(llm, mock_registry):
     content, tools_used, tokens = await llm.run_chain(user_query="test query")
 
     assert content == "Hello, world!"
-    assert tools_used == []
+    assert tools_used.calls == []
     assert tokens.total == 20
     assert tokens.prompt == 10
     assert tokens.completion == 10
@@ -150,9 +150,9 @@ async def test_run_chain_with_tools(llm, mock_registry):
     content, tools_used, tokens = await llm.run_chain(user_query="test query")
 
     assert content == "Result is done"
-    assert len(tools_used) == 1
-    assert tools_used[0]["name"] == "test_tool"
-    assert tools_used[0]["arguments"] == {"query": "test"}
+    assert len(tools_used.calls) == 1
+    assert tools_used.calls[0].name == "test_tool"
+    assert tools_used.calls[0].arguments == {"query": "test"}
     assert tokens.total == 25
     assert tokens.prompt == 13
     assert tokens.completion == 12
@@ -166,7 +166,8 @@ async def test_process_tool_calls(llm, mock_registry):
     tc1 = MockToolCall(id="call_1", name="tool_a", arguments={"x": 1})
     tc2 = MockToolCall(id="call_2", name="tool_b", arguments={"y": 2})
 
-    await llm._process_tool_calls([tc1, tc2], messages)
+    tools_used = ToolUsage()
+    await llm._process_tool_calls([tc1, tc2], messages, tools_used)
 
     assert len(messages) == 3
     assert messages[1]["role"] == "tool"
@@ -203,7 +204,7 @@ async def test_process_tool_calls_invalid_json(llm, mock_registry):
     bad_tc = make_tool_call_raw(id="call_1", name="tool_a", raw_arguments="not json")
 
     with pytest.raises(json.JSONDecodeError):
-        await llm._process_tool_calls([bad_tc], messages)
+        await llm._process_tool_calls([bad_tc], messages, ToolUsage())
 
 
 @pytest.mark.asyncio
@@ -228,8 +229,8 @@ async def test_run_chain_registry_error(llm, mock_registry):
     content, tools_used, tokens = await llm.run_chain(user_query="test query")
 
     assert content == "Done"
-    assert len(tools_used) == 1
-    assert tools_used[0]["name"] == "test_tool"
+    assert len(tools_used.calls) == 1
+    assert tools_used.calls[0].name == "test_tool"
     mock_registry.execute.assert_called_once()
 
 
@@ -258,7 +259,7 @@ async def test_run_chain_iteration_limit(mock_registry):
 
     content, tools_used, tokens = result
     assert content is None
-    assert len(tools_used) == 2
+    assert len(tools_used.calls) == 2
     assert tokens.total == 20
     assert llm.client.chat.completions.create.call_count == 2
 
@@ -276,5 +277,5 @@ async def test_run_chain_empty_response(llm, mock_registry):
     content, tools_used, tokens = await llm.run_chain(user_query="test")
 
     assert content is None
-    assert tools_used == []
+    assert tools_used.calls == []
     assert tokens.total == 5
