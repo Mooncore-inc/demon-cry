@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from core.auth import verify_master_key
-from core.llm import TokenUsage
+from core.llm import TokenUsage, ToolUsage
 from core.dependencies import get_llm
 
 router = APIRouter()
@@ -17,7 +17,7 @@ class OSINTRequest(BaseModel):
 class OSINTResponse(BaseModel):
     status: str
     result: str
-    tools_used: list[dict] = []
+    tools_used: ToolUsage = ToolUsage()
     tokens: TokenUsage = TokenUsage()
 
 @router.post(path="/investigate", dependencies=[Depends(verify_master_key)])
