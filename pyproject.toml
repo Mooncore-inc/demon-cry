@@ -4,6 +4,7 @@ authors = [
     {name = "Fazzyt"}
 ]
 requires-python = ">=3.12, <3.15"
+dynamic = ["version"]
 dependencies = [
     "fastapi",
     "openai",
@@ -13,17 +14,30 @@ dependencies = [
     "demon-cry-base (>=0.1.0,<0.2.0)",
 ]
 
+[project.scripts]
+demon-cry = "demon_cry.cli:main"
+
 [dependency-groups]
 dev = [
     "pre-commit (>=4.6.1,<5.0.0)",
     "pytest (>=8.0.0,<9.0.0)",
-    "pytest-asyncio (>=0.24.0,<1.0.0)"
+    "pytest-asyncio (>=0.24.0,<1.0.0)",
+    "poetry-dynamic-versioning (>=1.0.0,<2.0.0)",
 ]
 
 [tool.poetry]
-package-mode = false
+package-mode = true
+packages = [{ include = "demon_cry" }]
+include = ["modules/**/*"]
+version = "0.0.0"
 
 [tool.poetry.dependencies]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"

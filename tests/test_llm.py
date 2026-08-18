@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from core.llm import LLM, ToolUsage
+from demon_cry.llm import LLM, ToolUsage
 
 
 # --- Mock helpers for OpenAI response objects ---

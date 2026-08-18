@@ -40,7 +40,7 @@ cp example_config.json config.json  # настроить base_url, api_key, mode
 docker compose -f docker-compose-dev.yml up -d
 
 # Запуск веб-сервера
-poetry run uvicorn core.__main__:app --host 0.0.0.0 --port 8000 --reload
+poetry run uvicorn demon_cry.__main__:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Swagger доступен по `http://localhost:8000/docs`.
@@ -117,7 +117,7 @@ poetry run pytest tests/test_llm.py -v
 ```
 tests/
   __init__.py
-  test_llm.py    # Тесты для core/llm.py
+  test_llm.py    # Тесты для demon_cry/llm.py
 ```
 
 Тесты используют моки (фейковые объекты) вместо реальных вызовов OpenAI API. Это делает их быстрыми и предсказуемыми — никаких сетевых запросов и траты денег на API.

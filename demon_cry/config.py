@@ -1,4 +1,5 @@
 from dataclasses import MISSING, dataclass, fields
+from os import environ
 from sys import stderr
 import json
 
@@ -25,4 +26,4 @@ class Config:
             setattr(self, field.name, val)
 
 
-config = Config("config.json")
+config = Config(environ.get("DEMON_CRY_CONFIG", "config.json"))

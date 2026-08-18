@@ -5,7 +5,7 @@ import httpx
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from core.config import config
+from demon_cry.config import config
 
 router = APIRouter()
 

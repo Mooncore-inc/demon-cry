@@ -1,6 +1,6 @@
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from core.config import config
+from demon_cry.config import config
 
 security = HTTPBearer(auto_error=False)
 

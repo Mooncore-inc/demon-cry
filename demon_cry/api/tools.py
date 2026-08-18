@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from core.module_registry import registry
+from demon_cry.module_registry import registry
 
 router = APIRouter()
 

@@ -9,9 +9,9 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --only main --no-interaction
 
-COPY core/ core/
+COPY demon_cry/ demon_cry/
 COPY modules/ modules/
 
 EXPOSE 8000
 
-CMD ["uvicorn", "core.__main__:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "demon_cry.__main__:app", "--host", "0.0.0.0", "--port", "8000"]
