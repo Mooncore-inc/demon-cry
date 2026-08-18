@@ -6,7 +6,7 @@ from demon_cry.llm import LLM
 from demon_cry.module_registry import registry
 
 def lazy_load():
-    PROMPTS_DIR = Path(__file__).parent / "prompts"
+    PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
     system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
     return system_prompt_template
 

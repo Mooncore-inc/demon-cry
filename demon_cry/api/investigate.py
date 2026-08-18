@@ -3,9 +3,9 @@ import logging
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from demon_cry.auth import verify_master_key
+from demon_cry.utils.auth import verify_master_key
 from demon_cry.llm import TokenUsage, ToolUsage
-from demon_cry.dependencies import get_llm
+from demon_cry.utils.dependencies import get_llm
 
 router = APIRouter()
 
