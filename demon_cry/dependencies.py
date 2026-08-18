@@ -1,9 +1,9 @@
 from fastapi import Depends
 from pathlib import Path
 
-from core.config import Config
-from core.llm import LLM
-from core.module_registry import registry
+from demon_cry.config import Config
+from demon_cry.llm import LLM
+from demon_cry.module_registry import registry
 
 def lazy_load():
     PROMPTS_DIR = Path(__file__).parent / "prompts"

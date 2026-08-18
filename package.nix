@@ -18,28 +18,18 @@ stdenvNoCC.mkDerivation {
 
   nativeBuildInputs = [ makeWrapper ];
 
-  postPatch = ''
-    substituteInPlace core/config.py \
-      --replace-fail 'from sys import stderr' 'from os import environ; from sys import stderr' \
-      --replace-fail 'Config("config.json")' 'Config(environ.get("DEMON_CRY_CONFIG", "config.json"))'
-
-    substituteInPlace core/__init__.py \
-      --replace-fail 'import logging' 'import logging; from os import environ' \
-      --replace-fail 'filename="demon-cry.log",' 'filename=environ.get("DEMON_CRY_LOG") or None,'
-  '';
-
   dontBuild = true;
 
   installPhase = ''
     runHook preInstall
 
     mkdir -p $out/lib/demon-cry $out/bin
-    cp -r core modules $out/lib/demon-cry/
+    cp -r demon_cry modules $out/lib/demon-cry/
 
     makeWrapper ${pythonEnv}/bin/uvicorn $out/bin/demon-cry \
       --prefix PYTHONPATH : $out/lib/demon-cry \
       --set-default PYTHONUNBUFFERED 1 \
-      --add-flags "core.__main__:app"
+      --add-flags "demon_cry.__main__:app"
 
     runHook postInstall
   '';

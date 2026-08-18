@@ -16,6 +16,17 @@ bash <(curl -Ls https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/in
 <details>
 <summary>Нажмите, чтобы открыть</summary>
 
+### Pip (альтернатива Docker)
+
+```bash
+pip install demon-cry
+
+cp example_config.json config.json  # настроить base_url, api_key, model
+demon-cry --host 0.0.0.0 --port 8000
+```
+
+Swagger доступен по `http://localhost:8000/docs`. Конфигурация ищется в `config.json` текущей директории (переопределяется через `DEMON_CRY_CONFIG`).
+
 Создайте `docker-compose.yml`:
 
 ```yaml

@@ -163,7 +163,7 @@ git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
 nix develop
 
 cp example_config.json config.json
-uvicorn core.__main__:app --reload
+uvicorn demon_cry.__main__:app --reload
 ```
 
 Dev-shell даёт Python 3.12 со всеми рантайм-зависимостями, `poetry` и `jq`.
@@ -183,5 +183,5 @@ nix build .#default
 - `postPatch` заменяет два захардкоженных пути на переменные окружения:
   - `DEMON_CRY_CONFIG` — путь к `config.json` (по умолчанию `config.json` в рабочей директории);
   - `DEMON_CRY_LOG` — файл лога; если не задан, логи идут в stderr (в journal).
-- Бинарь `demon-cry` — это `makeWrapper` вокруг `uvicorn core.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.
-- Версия пакета задана аргументом `version` в `package.nix` и должна совпадать с версией в `core/__main__.py`.
+- Бинарь `demon-cry` — это `makeWrapper` вокруг `uvicorn demon_cry.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.
+- Версия пакета берётся из git-тега через `poetry-dynamic-versioning` и отражается в `demon_cry/__main__.py` автоматически.

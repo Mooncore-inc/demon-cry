@@ -13,8 +13,8 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-from core.config import Config
-from core.module_registry import ModuleRegistry
+from demon_cry.config import Config
+from demon_cry.module_registry import ModuleRegistry
 
 logger = logging.getLogger(__name__)
 

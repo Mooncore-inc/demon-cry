@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from core.api import (
+from demon_cry.api import (
     investigate,
     health,
     tools
