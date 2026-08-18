@@ -21,7 +21,7 @@ except PackageNotFoundError:
     _version = "0.0.0"
 
 app = FastAPI(
-    title="Demon cry",
+    title="demon cry core",
     version=_version,
     lifespan=lifespan
 )
