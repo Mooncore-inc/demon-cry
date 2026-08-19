@@ -1,0 +1,18 @@
+# Demon Cry configuration example
+# Copy to ~/.config/demon_cry/config.toml and adjust the values.
+
+# LLM provider OpenAI-compatible base URL
+base_url = "http://localhost:11434/v1"
+
+# Master key for Bearer authentication on the API itself.
+# Set to "CHANGEME" or leave empty to disable authentication.
+master_key = "secret"
+
+# Maximum agent reasoning iterations per request
+iteration_limit = 150
+
+# LLM provider API key
+api_key = "ollama"
+
+# Model name
+model = "qwen3:32b"

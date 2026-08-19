@@ -1,21 +1,59 @@
 import argparse
+import sys
 
 from demon_cry.__main__ import app
+from demon_cry.config import (
+    Config,
+    read_value,
+    resolve_config_path,
+    write_value,
+    _infer_value,
+)
 
 banner = r"""
      _
   __| | ___ _ __ ___   ___  _ __     ___ _ __ _   _    ___ ___  _ __ ___
  / _` |/ _ \ '_ ` _ \ / _ \| '_ \   / __| '__| | | |  / __/ _ \| '__/ _ \
 | (_| |  __/ | | | | | (_) | | | | | (__| |  | |_| | | (_| (_) | | |  __/
- \__,_|\___|_| |_| |_|\___/|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
+ \__,_|\___|_| |_| |_|\___|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
                                               |___/
 """
 
-def main():
+
+def _config_command(args: argparse.Namespace) -> int:
+    if args.config_action == "path":
+        print(resolve_config_path())
+        return 0
+    if args.config_action == "get":
+        try:
+            print(read_value(args.key))
+        except (FileNotFoundError, KeyError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        return 0
+    if args.config_action == "set":
+        path = write_value(args.key, _infer_value(args.value))
+        print(f"Set {args.key} -> {path}")
+        return 0
+    return 2
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="demon-cry",
         description="Run the Demon Cry OSINT agent API server.",
     )
+    subparsers = parser.add_subparsers(dest="command")
+
+    config_parser = subparsers.add_parser("config", help="Read/write config.toml")
+    config_sub = config_parser.add_subparsers(dest="config_action", required=True)
+    config_set = config_sub.add_parser("set", help="Set a config value")
+    config_set.add_argument("key", help="Key, e.g. base_url or db.link")
+    config_set.add_argument("value", help="Value (type inferred: int/bool/string)")
+    config_get = config_sub.add_parser("get", help="Print a config value")
+    config_get.add_argument("key", help="Key, e.g. base_url or db.link")
+    config_sub.add_parser("path", help="Print the resolved config path")
+
     parser.add_argument(
         "--host",
         default="0.0.0.0",
@@ -32,9 +70,19 @@ def main():
         action="store_true",
         help="Suppress the startup banner.",
     )
+    return parser
+
+
+def main():
+    parser = build_parser()
     args = parser.parse_args()
 
+    if getattr(args, "command", None) == "config":
+        raise SystemExit(_config_command(args))
+
     import uvicorn
+
+    Config.load()
 
     if not args.no_banner:
         print(banner)

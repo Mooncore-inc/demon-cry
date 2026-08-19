@@ -12,6 +12,8 @@ dependencies = [
     "pydantic",
     "uvicorn[standard]",
     "demon-cry-base (>=0.1.0,<0.2.0)",
+    "platformdirs (>=3.9.1,<5)",
+    "tomlkit (>=0.11.0)",
 ]
 
 [project.scripts]

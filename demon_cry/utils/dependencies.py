@@ -11,7 +11,7 @@ def lazy_load():
     return system_prompt_template
 
 def get_config() -> Config:
-    return Config("config.json")
+    return Config.load()
 
 def get_llm(
         config: Config = Depends(get_config)

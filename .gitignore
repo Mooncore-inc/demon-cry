@@ -222,6 +222,7 @@ __marimo__/
 
 # Config
 config.json
+config.toml
 
 # Nix
 result

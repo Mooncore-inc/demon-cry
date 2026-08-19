@@ -2,10 +2,11 @@ import time
 import logging
 import httpx
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from demon_cry.config import config
+from demon_cry.config import Config
+from demon_cry.utils.dependencies import get_config
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ class HealthResponse(BaseModel):
     latency_ms: int
 
 @router.get("/health")
-async def health():
+async def health(config: Config = Depends(get_config)):
     start = time.perf_counter()
     try:
         async with httpx.AsyncClient() as client:
