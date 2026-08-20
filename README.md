@@ -21,11 +21,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/Mooncore-inc/demon-cry/main/in
 ```bash
 pip install demon-cry
 
-cp example_config.json config.json  # настроить base_url, api_key, model
-demon-cry --host 0.0.0.0 --port 8000
+cp example_config.toml ~/.config/demon_cry/config.toml  # настроить base_url, api_key, model
+demon-cry
 ```
 
-Swagger доступен по `http://localhost:8000/docs`. Конфигурация ищется в `config.json` текущей директории (переопределяется через `DEMON_CRY_CONFIG`).
+Swagger доступен по `http://localhost:8000/docs`. Конфигурация ищется в `config.toml` (см. `demon-cry config path`, переопределяется через `DEMON_CRY_CONFIG`). Адрес и порт задаются в секции `[server]`.
 
 Создайте `docker-compose.yml`:
 
@@ -126,10 +126,10 @@ docker compose up -d
 <details>
 <summary>Нажмите, чтобы открыть</summary>
 
-Разовый запуск (нужен `config.json` в текущей директории):
+Разовый запуск (нужен `config.toml` по пути из `demon-cry config path`):
 
 ```bash
-nix run github:Mooncore-inc/demon-cry -- --host 0.0.0.0 --port 8000
+nix run github:Mooncore-inc/demon-cry
 ```
 
 Как NixOS-модуль — добавьте flake в inputs:

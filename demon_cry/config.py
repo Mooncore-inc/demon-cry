@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields, MISSING
+from dataclasses import dataclass, field, fields, MISSING
 from os import environ
 from pathlib import Path
 from sys import stderr
@@ -34,6 +34,11 @@ iteration_limit = 150
 
 # Model name
 model = "CHANGEME"
+
+# Server bind address and port
+[server]
+host = "0.0.0.0"
+port = 8000
 """
 
 
@@ -45,12 +50,19 @@ def resolve_config_path() -> Path:
 
 
 @dataclass
+class ServerConfig:
+    host: str = "0.0.0.0"
+    port: int = 8000
+
+
+@dataclass
 class Config:
     base_url: str
     master_key: str
     iteration_limit: int
     api_key: str
     model: str
+    server: ServerConfig = field(default_factory=ServerConfig)
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> "Config":
@@ -65,13 +77,27 @@ class Config:
             raise SystemExit(1)
         document = tomlkit.parse(config_path.read_text(encoding="utf-8"))
         kwargs: dict[str, Any] = {}
-        for field in fields(cls):
-            value = document.get(field.name, field.default)
+        for f in fields(cls):
+            if f.type is ServerConfig:
+                sub = document.get(f.name, {})
+                server_kwargs: dict[str, Any] = {}
+                for sfield in fields(ServerConfig):
+                    svalue = sub.get(sfield.name, sfield.default)
+                    if svalue is MISSING:
+                        raise ValueError(
+                            f"No value for {f.name}.{sfield.name} in {config_path}"
+                        )
+                    if sfield.type is str and not isinstance(svalue, str):
+                        svalue = str(svalue)
+                    server_kwargs[sfield.name] = svalue
+                kwargs[f.name] = ServerConfig(**server_kwargs)
+                continue
+            value = document.get(f.name, f.default)
             if value is MISSING:
-                raise ValueError(f"No value for {field.name} in {config_path}")
-            if field.type is str and not isinstance(value, str):
+                raise ValueError(f"No value for {f.name} in {config_path}")
+            if f.type is str and not isinstance(value, str):
                 value = str(value)
-            kwargs[field.name] = value
+            kwargs[f.name] = value
         return cls(**kwargs)
 
 

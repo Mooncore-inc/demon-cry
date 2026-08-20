@@ -16,3 +16,8 @@ api_key = "ollama"
 
 # Model name
 model = "qwen3:32b"
+
+# Server bind address and port
+[server]
+host = "0.0.0.0"
+port = 8000
