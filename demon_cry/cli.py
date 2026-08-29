@@ -1,9 +1,8 @@
 import argparse
+import logging
 import sys
+from os import environ
 from pathlib import Path
-
-from alembic import command
-from alembic.config import Config as AlembicConfig
 
 from demon_cry.__main__ import app
 from demon_cry.config import (
@@ -24,12 +23,16 @@ banner = r"""
 """
 
 
-def _build_alembic_config() -> AlembicConfig:
+def _build_alembic_config():
+    from alembic.config import Config as AlembicConfig
+
     ini_path = Path(__file__).parent / "alembic.ini"
     return AlembicConfig(str(ini_path))
 
 
 def _migrate_command(args: argparse.Namespace) -> int:
+    from alembic import command
+
     cfg = _build_alembic_config()
     action = args.migrate_action
     if action == "upgrade":
@@ -107,6 +110,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main():
     parser = build_parser()
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)-8s] %(funcName)s@%(filename)s:%(lineno)d) -> %(message)s",
+        filename=environ.get("DEMON_CRY_LOG") or None,
+        filemode="a",
+    )
 
     if getattr(args, "command", None) == "config":
         raise SystemExit(_config_command(args))
