@@ -5,6 +5,7 @@ authors = [
 ]
 requires-python = ">=3.12, <3.15"
 dynamic = ["version"]
+
 dependencies = [
     "fastapi",
     "openai",
@@ -14,7 +15,13 @@ dependencies = [
     "demon-cry-base (>=0.1.0,<0.2.0)",
     "platformdirs (>=3.9.1,<5)",
     "tomlkit (>=0.11.0)",
+    "sqlalchemy (>=2.0.52,<3.0.0)",
+    "alembic (>=1.13,<2.0)",
+    "aiosqlite (>=0.19,<0.21)",
 ]
+
+[project.optional-dependencies]
+postgres = ["asyncpg"]
 
 [project.scripts]
 demon-cry = "demon_cry.cli:main"

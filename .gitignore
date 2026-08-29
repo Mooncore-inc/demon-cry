@@ -228,3 +228,6 @@ config.toml
 result
 result-*
 .direnv/
+
+# Database
+.db

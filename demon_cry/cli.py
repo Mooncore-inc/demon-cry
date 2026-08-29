@@ -1,5 +1,9 @@
 import argparse
 import sys
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config as AlembicConfig
 
 from demon_cry.__main__ import app
 from demon_cry.config import (
@@ -18,6 +22,27 @@ banner = r"""
  \__,_|\___|_| |_| |_|\___/|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
                                               |___/
 """
+
+
+def _build_alembic_config() -> AlembicConfig:
+    ini_path = Path(__file__).parent / "alembic.ini"
+    return AlembicConfig(str(ini_path))
+
+
+def _migrate_command(args: argparse.Namespace) -> int:
+    cfg = _build_alembic_config()
+    action = args.migrate_action
+    if action == "upgrade":
+        command.upgrade(cfg, args.revision or "head")
+    elif action == "downgrade":
+        command.downgrade(cfg, args.revision or "-1")
+    elif action == "current":
+        command.current(cfg)
+    elif action == "history":
+        command.history(cfg)
+    else:
+        return 2
+    return 0
 
 
 def _config_command(args: argparse.Namespace) -> int:
@@ -54,6 +79,23 @@ def build_parser() -> argparse.ArgumentParser:
     config_get.add_argument("key", help="Key, e.g. base_url or db.link")
     config_sub.add_parser("path", help="Print the resolved config path")
 
+    migrate_parser = subparsers.add_parser(
+        "migrate", help="Run database migrations (Alembic)"
+    )
+    migrate_sub = migrate_parser.add_subparsers(dest="migrate_action", required=True)
+    upgrade_parser = migrate_sub.add_parser("upgrade", help="Upgrade to a revision")
+    upgrade_parser.add_argument(
+        "revision", nargs="?", default="head", help="Target revision (default: head)"
+    )
+    downgrade_parser = migrate_sub.add_parser(
+        "downgrade", help="Downgrade to a revision"
+    )
+    downgrade_parser.add_argument(
+        "revision", nargs="?", default="-1", help="Target revision (default: -1)"
+    )
+    migrate_sub.add_parser("current", help="Show current revision")
+    migrate_sub.add_parser("history", help="Show migration history")
+
     parser.add_argument(
         "--no-banner",
         action="store_true",
@@ -68,6 +110,9 @@ def main():
 
     if getattr(args, "command", None) == "config":
         raise SystemExit(_config_command(args))
+
+    if getattr(args, "command", None) == "migrate":
+        raise SystemExit(_migrate_command(args))
 
     import uvicorn
 
