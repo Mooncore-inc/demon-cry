@@ -1,9 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
-from importlib.metadata import PackageNotFoundError, version
 
 from fastapi import FastAPI
 
+from demon_cry.utils import version
 from demon_cry.module_registry import registry
 from demon_cry.api.router import router
 
@@ -15,14 +15,9 @@ async def lifespan(app: FastAPI):
     await registry.discover()
     yield
 
-try:
-    _version = version("demon-cry")
-except PackageNotFoundError:
-    _version = "0.0.0"
-
 app = FastAPI(
     title="demon cry core",
-    version=_version,
+    version=version.get_version(),
     lifespan=lifespan
 )
 
