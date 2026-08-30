@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 
-from sqlalchemy import select
-
 from demon_cry.database.engine import async_session_factory
-from demon_cry.database.models.settings import Settings
+from demon_cry.database.repositories.settings import SettingsRepository
 
 DEFAULTS: dict[str, str | int] = {
     "base_url": "CHANGEME",
@@ -85,8 +83,9 @@ class Config:
     @classmethod
     async def load(cls) -> "Config":
         async with async_session_factory() as session:
-            result = await session.execute(select(Settings))
-            rows = {s.key: s.value for s in result.scalars().all()}
+            repo = SettingsRepository(session)
+            settings = await repo.get_all()
+            rows = {s.key: s.value for s in settings}
 
         kwargs: dict[str, str | int] = {}
         for key, default in DEFAULTS.items():
@@ -103,20 +102,20 @@ class Config:
 
 async def init_defaults() -> None:
     async with async_session_factory() as session:
-        result = await session.execute(select(Settings))
-        existing = {s.key for s in result.scalars().all()}
+        repo = SettingsRepository(session)
+        settings = await repo.get_all()
+        existing = {s.key for s in settings}
         for key, value in DEFAULTS.items():
             if key not in existing:
-                session.add(Settings(key=key, value=str(value)))
-        await session.commit()
+                await repo.create(key=key, value=str(value))
 
 
 async def get_config_value(key: str) -> str | int:
+    if key not in DEFAULTS:
+        raise KeyError(f"Unknown config key: {key}")
     async with async_session_factory() as session:
-        repo_result = await session.execute(
-            select(Settings).where(Settings.key == key)
-        )
-        row = repo_result.scalar_one_or_none()
+        repo = SettingsRepository(session)
+        row = await repo.get(key=key)
     if row is None:
         raise KeyError(f"Unknown config key: {key}")
     if key in _numeric_keys:
@@ -128,12 +127,9 @@ async def set_config_value(key: str, value: str) -> None:
     if key not in DEFAULTS:
         raise KeyError(f"Unknown config key: {key}")
     async with async_session_factory() as session:
-        result = await session.execute(
-            select(Settings).where(Settings.key == key)
-        )
-        row = result.scalar_one_or_none()
+        repo = SettingsRepository(session)
+        row = await repo.get(key=key)
         if row:
-            row.value = value
+            await repo.update(row, value=value)
         else:
-            session.add(Settings(key=key, value=value))
-        await session.commit()
+            await repo.create(key=key, value=value)
