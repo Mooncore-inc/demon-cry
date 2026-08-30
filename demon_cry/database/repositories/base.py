@@ -15,10 +15,14 @@ class BaseRepository(Generic[ModelType]):
     async def get_by_id(self, id: int) -> ModelType | None:
         return await self.session.get(self.model, id)
 
-    async def get_all(self, limit: int = 100, offset: int = 0) -> Sequence[ModelType]:
-        result = await self.session.execute(
-            select(self.model).limit(limit).offset(offset)
-        )
+    async def get(self, **filters) -> ModelType | None:
+        stmt = select(self.model).filter_by(**filters)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_all(self, limit: int = 100, offset: int = 0, **filters) -> Sequence[ModelType]:
+        stmt = select(self.model).filter_by(**filters).limit(limit).offset(offset)
+        result = await self.session.execute(stmt)
         return result.scalars().all()
 
     async def create(self, **kwargs) -> ModelType:
