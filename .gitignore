@@ -230,4 +230,4 @@ result-*
 .direnv/
 
 # Database
-.db
+*.db

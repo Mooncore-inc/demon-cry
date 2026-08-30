@@ -13,8 +13,8 @@ def lazy_load():
     system_prompt_template = (PROMPTS_DIR / "system.md").read_text(encoding="utf-8")
     return system_prompt_template
 
-def get_config() -> Config:
-    return Config.load()
+async def get_config() -> Config:
+    return await Config.load()
 
 def get_llm(
         config: Config = Depends(get_config)

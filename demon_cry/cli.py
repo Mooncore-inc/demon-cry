@@ -1,29 +1,30 @@
 import argparse
+import asyncio
 import logging
 import sys
 from os import environ
-from pathlib import Path
 
 from demon_cry.__main__ import app
 from demon_cry.config import (
     Config,
-    read_value,
-    resolve_config_path,
-    write_value,
-    _infer_value,
+    DEFAULTS,
+    get_config_value,
+    init_defaults,
+    set_config_value,
 )
 
 banner = r"""
      _
-  __| | ___ _ __ ___   ___  _ __     ___ _ __ _   _    ___ ___  _ __ ___
- / _` |/ _ \ '_ ` _ \ / _ \| '_ \   / __| '__| | | |  / __/ _ \| '__/ _ \
-| (_| |  __/ | | | | | (_) | | | | | (__| |  | |_| | | (_| (_) | | |  __/
- \__,_|\___|_| |_| |_|\___/|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
-                                              |___/
+   __| | ___ _ __ ___   ___  _ __     ___ _ __ _   _    ___ ___  _ __ ___
+  / _` |/ _ \ '_ ` _ \ / _ \| '_ \   / __| '__| | | |  / __/ _ \| '__/ _ \
+ | (_| |  __/ | | | | | (_) | | | | | (__| |  | |_| | | (_| (_) | | |  __/
+  \__,_|\___|_| |_| |_|\___/|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
+                                                |___/
 """
 
 
 def _build_alembic_config():
+    from pathlib import Path
     from alembic.config import Config as AlembicConfig
 
     ini_path = Path(__file__).parent / "alembic.ini"
@@ -48,20 +49,39 @@ def _migrate_command(args: argparse.Namespace) -> int:
     return 0
 
 
+async def _config_get(key: str) -> int:
+    try:
+        await init_defaults()
+        value = await get_config_value(key)
+        print(value)
+    except KeyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    return 0
+
+
+async def _config_set(key: str, value: str) -> int:
+    try:
+        await set_config_value(key, value)
+        print(f"Set {key}")
+    except KeyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    return 0
+
+
 def _config_command(args: argparse.Namespace) -> int:
-    if args.config_action == "path":
-        print(resolve_config_path())
-        return 0
     if args.config_action == "get":
-        try:
-            print(read_value(args.key))
-        except (FileNotFoundError, KeyError) as exc:
-            print(str(exc), file=sys.stderr)
-            return 1
-        return 0
+        return asyncio.run(_config_get(args.key))
     if args.config_action == "set":
-        path = write_value(args.key, _infer_value(args.value))
-        print(f"Set {args.key} -> {path}")
+        return asyncio.run(_config_set(args.key, args.value))
+    if args.config_action == "list":
+        for key in DEFAULTS:
+            print(key)
+        return 0
+    if args.config_action == "defaults":
+        for key, value in DEFAULTS.items():
+            print(f"{key} = {value}")
         return 0
     return 2
 
@@ -73,14 +93,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command")
 
-    config_parser = subparsers.add_parser("config", help="Read/write config.toml")
+    config_parser = subparsers.add_parser("config", help="Read/write config")
     config_sub = config_parser.add_subparsers(dest="config_action", required=True)
     config_set = config_sub.add_parser("set", help="Set a config value")
-    config_set.add_argument("key", help="Key, e.g. base_url or db.link")
-    config_set.add_argument("value", help="Value (type inferred: int/bool/string)")
+    config_set.add_argument("key", help="Key, e.g. base_url or model")
+    config_set.add_argument("value", help="Value")
     config_get = config_sub.add_parser("get", help="Print a config value")
-    config_get.add_argument("key", help="Key, e.g. base_url or db.link")
-    config_sub.add_parser("path", help="Print the resolved config path")
+    config_get.add_argument("key", help="Key, e.g. base_url or model")
+    config_sub.add_parser("list", help="List all config keys")
+    config_sub.add_parser("defaults", help="Show default values")
 
     migrate_parser = subparsers.add_parser(
         "migrate", help="Run database migrations (Alembic)"
@@ -90,9 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
     upgrade_parser.add_argument(
         "revision", nargs="?", default="head", help="Target revision (default: head)"
     )
-    downgrade_parser = migrate_sub.add_parser(
-        "downgrade", help="Downgrade to a revision"
-    )
+    downgrade_parser = migrate_sub.add_parser("downgrade", help="Downgrade to a revision")
     downgrade_parser.add_argument(
         "revision", nargs="?", default="-1", help="Target revision (default: -1)"
     )
@@ -126,12 +145,12 @@ def main():
 
     import uvicorn
 
-    config = Config.load()
+    config = asyncio.run(Config.load())
 
     if not args.no_banner:
         print(banner)
 
-    uvicorn.run(app, host=config.server.host, port=config.server.port)
+    uvicorn.run(app, host=config.server_host, port=config.server_port)
 
 
 if __name__ == "__main__":

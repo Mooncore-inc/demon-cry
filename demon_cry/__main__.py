@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from demon_cry.utils import version
 from demon_cry.module_registry import registry
 from demon_cry.api.router import router
+from demon_cry.config import init_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     registry.modules_dir = "modules"
     await registry.discover()
+    await init_defaults()
     yield
 
 app = FastAPI(
