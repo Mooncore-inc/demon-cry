@@ -4,7 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from demon_cry.database.base import Base
+from demon_cry.database.models import Base
 from demon_cry.database.engine import engine
 
 config = context.config

@@ -1,7 +1,7 @@
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from demon_cry.database.base import Base
+from demon_cry.database.models import Base
 
 
 class Settings(Base):

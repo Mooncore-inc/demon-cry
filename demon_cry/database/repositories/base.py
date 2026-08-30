@@ -2,7 +2,7 @@ from typing import TypeVar, Generic, Type, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from demon_cry.database.base import Base
+from demon_cry.database.models import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
 
