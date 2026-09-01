@@ -1,10 +1,10 @@
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from demon_cry.database.models import Base
+from demon_cry.database.models.base import BaseModel
 
 
-class Settings(Base):
+class SettingsModel(BaseModel):
     __tablename__ = "kv_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

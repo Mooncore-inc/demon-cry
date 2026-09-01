@@ -1,5 +1,7 @@
-from sqlalchemy.orm import DeclarativeBase
+from demon_cry.database.models.base import BaseModel
+from demon_cry.database.models.settings import SettingsModel
+from demon_cry.database.models.user import UserModel
 
-
-class Base(DeclarativeBase):
-    pass
+__all__ = [
+    "BaseModel", "SettingsModel", "UserModel"
+]

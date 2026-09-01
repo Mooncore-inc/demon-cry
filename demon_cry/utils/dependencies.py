@@ -5,7 +5,8 @@ from demon_cry.llm import LLM
 from demon_cry.module_registry import registry
 
 from demon_cry.database.engine import get_session
-from demon_cry.database.repositories.settings import SettingsRepository
+
+from demon_cry.database.repositories import SettingsRepository, UserRepository
 
 
 async def get_config() -> Config:
@@ -20,3 +21,6 @@ def get_llm(
 
 def get_settings_repo(session=Depends(get_session)):
     return SettingsRepository(session)
+
+def get_user_repo(session=Depends(get_session)):
+    return UserRepository(session)

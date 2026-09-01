@@ -2,9 +2,9 @@ from typing import TypeVar, Generic, Type, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from demon_cry.database.models import Base
+from demon_cry.database.models.base import BaseModel
 
-ModelType = TypeVar("ModelType", bound=Base)
+ModelType = TypeVar("ModelType", bound=BaseModel)
 
 
 class BaseRepository(Generic[ModelType]):

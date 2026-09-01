@@ -3,9 +3,10 @@ import logging
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from demon_cry.utils.auth import verify_master_key
+from demon_cry.utils.auth import get_current_user
 from demon_cry.llm import TokenUsage, ToolUsage
 from demon_cry.utils.dependencies import get_llm
+from demon_cry.database.models.user import UserModel
 
 router = APIRouter()
 
@@ -20,10 +21,11 @@ class OSINTResponse(BaseModel):
     tools_used: ToolUsage = ToolUsage()
     tokens: TokenUsage = TokenUsage()
 
-@router.post(path="/investigate", dependencies=[Depends(verify_master_key)])
+@router.post(path="/investigate")
 async def investigate(
     req: OSINTRequest,
-    llm = Depends(get_llm)
+    llm = Depends(get_llm),
+    user: UserModel = Depends(get_current_user),
     ):
     try:
         res, tools, tokens = await llm.run_chain(

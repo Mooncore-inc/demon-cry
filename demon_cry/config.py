@@ -5,7 +5,6 @@ from demon_cry.database.repositories.settings import SettingsRepository
 
 DEFAULTS: dict[str, str | int] = {
     "base_url": "CHANGEME",
-    "master_key": "",
     "api_key": "",
     "model": "CHANGEME",
     "iteration_limit": 150,
@@ -72,7 +71,6 @@ _numeric_keys = {k for k, v in DEFAULTS.items() if isinstance(v, int)}
 @dataclass
 class Config:
     base_url: str
-    master_key: str
     api_key: str
     model: str
     iteration_limit: int

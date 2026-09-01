@@ -3,12 +3,10 @@ repos:
     rev: v6.0.0
     hooks:
       - id: "trailing-whitespace"
-        exclude: ^searxng/settings\.yml$
       - id: "check-case-conflict"
       - id: "check-merge-conflict"
       - id: "debug-statements"
       - id: "end-of-file-fixer"
-        exclude: ^searxng/settings\.yml$
       - id: "mixed-line-ending"
       - id: "detect-private-key"
       - id: "check-yaml"
@@ -19,4 +17,4 @@ repos:
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        exclude: ^(searxng/settings\.yml|example_config\.toml)$
+        exclude: ^(demon_cry/alembic/versions/.*\.py)$
