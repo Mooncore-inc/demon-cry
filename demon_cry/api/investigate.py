@@ -3,10 +3,10 @@ import logging
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from demon_cry.utils.auth import get_current_user
+from demon_cry.api.auth import get_current_user
 from demon_cry.llm import TokenUsage, ToolUsage
-from demon_cry.utils.dependencies import get_llm
-from demon_cry.database.models.user import UserModel
+from demon_cry.api.dependencies import get_llm
+from demon_cry.database.models.users import UserModel
 
 router = APIRouter()
 

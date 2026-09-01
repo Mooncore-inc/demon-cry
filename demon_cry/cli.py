@@ -52,7 +52,7 @@ def _migrate_command(args: argparse.Namespace) -> int:
 async def _user_create(username: str, is_admin: bool) -> int:
     from uuid import uuid4
     from demon_cry.database.engine import async_session_factory
-    from demon_cry.database.repositories.user import UserRepository
+    from demon_cry.database.repositories.users import UserRepository
 
     api_key = str(uuid4())
     async with async_session_factory() as session:

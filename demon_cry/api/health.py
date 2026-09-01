@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from demon_cry.config import Config
-from demon_cry.utils.dependencies import get_config
+from demon_cry.api.dependencies import get_config
 
 router = APIRouter()
 
