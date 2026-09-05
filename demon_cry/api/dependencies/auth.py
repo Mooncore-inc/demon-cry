@@ -23,7 +23,7 @@ async def get_current_user(
 
 CurrentUser = Annotated[UserModel, Depends(get_current_user)]
 
-async def require_admin(user: UserModel = Depends(get_current_user)) -> UserModel:
+async def require_admin(user: CurrentUser) -> UserModel:
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user
