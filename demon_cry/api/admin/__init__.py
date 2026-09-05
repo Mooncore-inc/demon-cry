@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from demon_cry.api.auth import require_admin
+from demon_cry.api.dependencies.auth import require_admin
 
 from demon_cry.api.admin.users import users_router
 

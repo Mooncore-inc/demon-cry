@@ -1,16 +1,16 @@
+from typing import Annotated
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from demon_cry.database.models.users import UserModel
-from demon_cry.api.dependencies import get_user_repo
-from demon_cry.database.repositories.users import UserRepository
+from demon_cry.api.dependencies.database import UserRepo
 
 security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
+    user_repo: UserRepo,
     credentials: HTTPAuthorizationCredentials = Security(security),
-    user_repo: UserRepository = Depends(get_user_repo),
 ) -> UserModel:
     if not credentials:
         raise HTTPException(status_code=401, detail="Missing API key")
@@ -20,6 +20,8 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="Invalid API key")
 
     return user
+
+CurrentUser = Annotated[UserModel, Depends(get_current_user)]
 
 async def require_admin(user: UserModel = Depends(get_current_user)) -> UserModel:
     if not user.is_admin:
