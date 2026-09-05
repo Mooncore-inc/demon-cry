@@ -6,6 +6,8 @@ from typing import Any, Dict, TypedDict
 
 from demon_cry_base import BaseModule
 
+from demon_cry.database.engine import async_session_factory
+from demon_cry.database.repositories import ModuleRepository
 
 class ToolFunction(TypedDict):
     name: str
@@ -21,9 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 class ModuleRegistry:
-    def __init__(self, modules_dir: str = "modules"):
+    def __init__(self):
         self.modules: Dict[str, BaseModule] = {}
-        self.modules_dir = modules_dir
+        self.session_factory = async_session_factory
 
     async def register(self, module: BaseModule):
         self.modules[module.name] = module
@@ -56,17 +58,16 @@ class ModuleRegistry:
         if tool_name not in self.modules:
             return {"error": f"Unknown module: {tool_name}"}
         try:
-            config = self._load_config(tool_name)
+            config = await self._load_config(tool_name)
             return await self.modules[tool_name].execute(config=config, **kwargs)
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}
 
-    def _load_config(self, module_name: str) -> dict:
-        config_path = Path(self.modules_dir) / module_name / "config.json"
-        if config_path.exists():
-            return json.loads(config_path.read_text())
+    async def _load_config(self, module_name: str) -> dict:
+        async with self.session_factory() as session:
+            repo = ModuleRepository(session=session)
+            record = await repo.get(module_name=module_name)
+            if record and record.enabled:
+                return record.config
         return {}
-
-
-registry = ModuleRegistry()

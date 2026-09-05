@@ -5,7 +5,7 @@ import sys
 from os import environ
 
 from demon_cry.__main__ import app
-from demon_cry.config import (
+from demon_cry.core.config import (
     Config,
     DEFAULTS,
     get_config_value,

@@ -1,9 +1,9 @@
 from demon_cry.api.dependencies.auth import CurrentUser
 from demon_cry.api.dependencies.database import UserRepo, SettingsRepo
-from demon_cry.api.dependencies.config import AppLLM, AppConfig
+from demon_cry.api.dependencies.config import AppLLM, AppConfig, AppRegistry
 
 __all__ = [
     "CurrentUser",
     "UserRepo", "SettingsRepo",
-    "AppLLM", "AppConfig"
+    "AppLLM", "AppConfig", "AppRegistry"
 ]

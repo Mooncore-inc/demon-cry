@@ -4,16 +4,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from demon_cry.utils import version
-from demon_cry.module_registry import registry
+from demon_cry.core.module_registry import ModuleRegistry
 from demon_cry.api import router
-from demon_cry.config import init_defaults
+from demon_cry.core.config import init_defaults
 
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    registry.modules_dir = "modules"
-    await registry.discover()
+    modules = ModuleRegistry()
+    await modules.discover()
+    app.state.registry = modules
     await init_defaults()
     yield
 
