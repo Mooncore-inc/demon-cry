@@ -1,10 +1,8 @@
-import json
 import logging
 from importlib.metadata import entry_points
-from pathlib import Path
 from typing import Any, Dict, TypedDict
 
-from demon_cry_base import BaseModule
+from demon_cry_base import BaseModule, ModuleConfig
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import ModuleRepository
@@ -33,13 +31,23 @@ class ModuleRegistry:
 
     async def discover(self):
         eps = entry_points(group="demon_cry.modules")
-        for ep in eps:
-            try:
-                module_class = ep.load()
-                instance = module_class()
-                await self.register(instance)
-            except Exception:
-                logger.exception("Failed to load module: %s", ep.name)
+        async with self.session_factory() as session:
+            repo = ModuleRepository(session=session)
+            for ep in eps:
+                try:
+                    module_class = ep.load()
+                    instance = module_class()
+                    await self.register(instance)
+                    existing = await repo.get(module_name=instance.name)
+                    if not existing:
+                        defaults = instance.config_model().model_dump()
+                        await repo.create(
+                            module_name=instance.name,
+                            config=defaults,
+                            enabled=False
+                        )
+                except Exception:
+                    logger.exception("Failed to load module: %s", ep.name)
 
     async def get_tools_schema(self) -> list[ToolDefinition]:
         tools: list[ToolDefinition] = []
@@ -58,8 +66,10 @@ class ModuleRegistry:
         if tool_name not in self.modules:
             return {"error": f"Unknown module: {tool_name}"}
         try:
-            config = await self._load_config(tool_name)
-            return await self.modules[tool_name].execute(config=config, **kwargs)
+            module = self.modules[tool_name]
+            config_data = await self._load_config(tool_name)
+            config = module.config_model(**config_data)
+            return await module.execute(config=config, **kwargs)
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}
