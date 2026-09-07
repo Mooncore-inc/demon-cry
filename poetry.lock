@@ -207,14 +207,14 @@ markers = {main = "platform_system == \"Windows\"", dev = "sys_platform == \"win
 
 [[package]]
 name = "demon-cry-base"
-version = "0.2.0"
+version = "0.3.0"
 description = "Base module for demon-cry OSINT plugins"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "demon_cry_base-0.2.0-py3-none-any.whl", hash = "sha256:8f232ed3eeadc9b18339e1d448ac9a9094930566f0c534f4d76e53dd76b13cbb"},
-    {file = "demon_cry_base-0.2.0.tar.gz", hash = "sha256:7d9f92a048f324d299daed0f6ed81f204c5497ddfe81f5548b5caf552a1521e9"},
+    {file = "demon_cry_base-0.3.0-py3-none-any.whl", hash = "sha256:999054129d468bdb19650f0ce0cd5aea83b0140a24abd61b3011950fb352a4fc"},
+    {file = "demon_cry_base-0.3.0.tar.gz", hash = "sha256:d1c2d1b62117cdee9b6a47e06ccd7391f577029779446c62367b6d451a8e7d91"},
 ]
 
 [[package]]
@@ -1779,4 +1779,4 @@ postgres = ["asyncpg"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <3.15"
-content-hash = "a03f2e54644e31192a51fa47d09a3f2d5aa467c656031b1c2609237b3fbc06f6"
+content-hash = "0885f254baf649a847096d21b09ecd13f0253f2c1eccaac7823e08ba7bc46f8d"

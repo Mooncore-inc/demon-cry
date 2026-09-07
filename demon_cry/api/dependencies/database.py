@@ -3,7 +3,7 @@ from fastapi import Depends
 
 from demon_cry.database.engine import get_session
 
-from demon_cry.database.repositories import SettingsRepository, UserRepository, ModuleRepository
+from demon_cry.database.repositories import SettingsRepository, UserRepository, ModuleRepository, LLMRepository
 
 def get_settings_repo(session=Depends(get_session)) -> SettingsRepository:
     return SettingsRepository(session)
@@ -19,3 +19,8 @@ def get_user_repo(session=Depends(get_session)) -> UserRepository:
     return UserRepository(session)
 
 UserRepo = Annotated[UserRepository, Depends(get_user_repo)]
+
+def get_llm_repo(session=Depends(get_session)) -> LLMRepository:
+    return LLMRepository(session)
+
+LLMRepo = Annotated[LLMRepository, Depends(get_llm_repo)]

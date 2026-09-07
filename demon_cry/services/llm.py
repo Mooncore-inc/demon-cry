@@ -89,12 +89,17 @@ class LLM:
         model: Identifier of the model being used.
     """
 
-    def __init__(self, config: Config, registry: ModuleRegistry, system_prompt: str):
-        self.client = AsyncOpenAI(
-            base_url = config.base_url,
-            api_key = config.api_key
-        )
-        self.model = config.model
+    def __init__(
+        self,
+        base_url: str,
+        api_key: str,
+        model: str,
+        config: Config,
+        registry: ModuleRegistry,
+        system_prompt: str,
+    ):
+        self.client = AsyncOpenAI(base_url=base_url, api_key=api_key)
+        self.model = model
         self.config = config
         self.registry = registry
         self.system_prompt = system_prompt

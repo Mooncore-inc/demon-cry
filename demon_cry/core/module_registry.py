@@ -2,7 +2,7 @@ import logging
 from importlib.metadata import entry_points
 from typing import Any, Dict, TypedDict
 
-from demon_cry_base import BaseModule, ModuleConfig
+from demon_cry_base import BaseModule
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import ModuleRepository
@@ -57,7 +57,7 @@ class ModuleRegistry:
                 "function": {
                     "name": module.name,
                     "description": f"[Category: {module.category}] {module.description}",
-                    "parameters": module.parameters
+                    "parameters": module.parameters_model.model_json_schema()
                 }
             })
         return tools
@@ -69,7 +69,8 @@ class ModuleRegistry:
             module = self.modules[tool_name]
             config_data = await self._load_config(tool_name)
             config = module.config_model(**config_data)
-            return await module.execute(config=config, **kwargs)
+            params = module.parameters_model(**kwargs)
+            return await module.execute(config=config, params=params)
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}

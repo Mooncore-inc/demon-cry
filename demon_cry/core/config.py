@@ -4,9 +4,6 @@ from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories.settings import SettingsRepository
 
 DEFAULTS: dict[str, str | int] = {
-    "base_url": "CHANGEME",
-    "api_key": "",
-    "model": "CHANGEME",
     "iteration_limit": 150,
     "server_host": "0.0.0.0",
     "server_port": 8000,
@@ -70,9 +67,6 @@ _numeric_keys = {k for k, v in DEFAULTS.items() if isinstance(v, int)}
 
 @dataclass
 class Config:
-    base_url: str
-    api_key: str
-    model: str
     iteration_limit: int
     server_host: str
     server_port: int

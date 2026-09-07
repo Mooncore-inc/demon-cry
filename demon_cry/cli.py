@@ -122,10 +122,10 @@ def build_parser() -> argparse.ArgumentParser:
     config_parser = subparsers.add_parser("config", help="Read/write config")
     config_sub = config_parser.add_subparsers(dest="config_action", required=True)
     config_set = config_sub.add_parser("set", help="Set a config value")
-    config_set.add_argument("key", help="Key, e.g. base_url or model")
+    config_set.add_argument("key", help="Key, e.g. server_port or iteration_limit")
     config_set.add_argument("value", help="Value")
     config_get = config_sub.add_parser("get", help="Print a config value")
-    config_get.add_argument("key", help="Key, e.g. base_url or model")
+    config_get.add_argument("key", help="Key, e.g. server_port or iteration_limit")
     config_sub.add_parser("list", help="List all config keys")
     config_sub.add_parser("defaults", help="Show default values")
 
