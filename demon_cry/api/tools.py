@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from demon_cry.module_registry import registry
+from demon_cry.api.dependencies import AppRegistry
 
 router = APIRouter()
 
@@ -27,6 +27,6 @@ class ToolsResponse(BaseModel):
 
 
 @router.get(path="/tools")
-async def tools():
+async def tools(registry: AppRegistry):
     tools = await registry.get_tools_schema()
     return ToolsResponse(tools=tools)

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from demon_cry.llm import LLM, ToolUsage
+from demon_cry.services.llm import LLM, ToolUsage
 
 
 # --- Mock helpers for OpenAI response objects ---
@@ -83,8 +83,15 @@ def mock_registry():
 
 
 @pytest.fixture
-def llm(mock_config, mock_registry):
-    return LLM(config=mock_config, registry=mock_registry, system_prompt="You are a test.")
+def llm(mock_registry):
+    return LLM(
+        base_url="http://localhost:8000",
+        api_key="test-key",  # pragma: allowlist secret
+        model="test-model",
+        registry=mock_registry,
+        system_prompt="You are a test.",
+        iteration_limit=5,
+    )
 
 
 def make_usage(total=10, prompt=5, completion=5, reasoning=0, cache_hit=0, cache_miss=0):
@@ -236,13 +243,14 @@ async def test_run_chain_registry_error(llm, mock_registry):
 
 @pytest.mark.asyncio
 async def test_run_chain_iteration_limit(mock_registry):
-    config = MagicMock()
-    config.base_url = "http://localhost:8000"
-    config.api_key = "test-key"  # pragma: allowlist secret
-    config.model = "test-model"
-    config.iteration_limit = 2
-
-    llm = LLM(config=config, registry=mock_registry, system_prompt="test")
+    llm = LLM(
+        base_url="http://localhost:8000",
+        api_key="test-key",  # pragma: allowlist secret  # pragma: allowlist secret
+        model="test-model",
+        registry=mock_registry,
+        system_prompt="test",
+        iteration_limit=2,
+    )
     mock_registry.get_tools_schema.return_value = [
         {"type": "function", "function": {"name": "tool", "description": "d", "parameters": {}}}
     ]
