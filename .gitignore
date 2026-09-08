@@ -232,3 +232,4 @@ result-*
 # Database
 *.db
 .opencode/
+.superpowers/
