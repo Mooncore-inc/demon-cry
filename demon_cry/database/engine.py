@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from demon_cry.core.config import config
+
 engine = create_async_engine(
-    url="sqlite+aiosqlite:///database.db",
+    url=config.db_url,
     pool_pre_ping=True,
 )
 

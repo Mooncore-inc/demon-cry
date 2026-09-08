@@ -5,6 +5,7 @@ import sys
 from os import environ
 
 from demon_cry.__main__ import app
+from demon_cry.core.config import config
 
 banner = r"""
       _
@@ -128,7 +129,7 @@ def main():
     if not args.no_banner:
         print(banner)
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=config.host, port=config.port)
 
 
 if __name__ == "__main__":
