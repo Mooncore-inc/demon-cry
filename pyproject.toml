@@ -39,6 +39,9 @@ packages = [{ include = "demon_cry" }]
 include = ["modules/**/*"]
 version = "0.0.0"
 
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
+
 [tool.poetry.dependencies]
 
 [tool.poetry-dynamic-versioning]
