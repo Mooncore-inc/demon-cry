@@ -1,81 +1,85 @@
 # Конфигурация
 
-Demon Cry настраивается через файл `config.json` в корне проекта.
+Demon Cry использует комбинацию переменных окружения и настроек в БД.
 
-## Создание конфига
+## Переменные окружения
+
+| Переменная | Описание | По умолчанию |
+|------------|----------|--------------|
+| `DC_DB_URL` | URL базы данных (SQLAlchemy async) | `sqlite+aiosqlite:///database.db` |
+| `DC_HOST` | Адрес API-сервера | `127.0.0.1` |
+| `DC_PORT` | Порт API-сервера | `8000` |
+| `DEMON_CRY_LOG` | Путь к файлу лога (stderr если не задано) | — |
+
+Пример:
 
 ```bash
-cp example_config.json config.json
+DC_HOST=0.0.0.0 DC_PORT=9000 demon-cry
 ```
 
-## Поля конфигурации
+## LLM-модели
 
-| Поле | Описание | Пример |
-|------|----------|--------|
-| `base_url` | URL API-провайдера (совместимого с OpenAI API) | `https://api.openai.com/v1` |
-| `master_key` | Ключ для доступа к api | `сами думайте` |
-| `iteration_limit` | Максимальное количество циклов взаимодействия с LLM | `150` |
-| `api_key` | Ключ доступа к API | `sk-...` |
-| `model` | Идентификатор модели | `gpt-4o` |
-| `searxng_url` | URL SearXNG | `http://localhost:8080` |
+LLM-провайдеры хранятся в БД и управляются через Admin API.
 
-## Примеры для разных провайдеров
+### Добавление модели
 
-### OpenAI
-
-```json
-{
+```bash
+curl -X POST http://localhost:8000/api/admin/llm-models \
+  -H "Authorization: Bearer <api_key>" \
+  -H "Content-Type: application/json" \
+  -d '{
     "base_url": "https://api.openai.com/v1",
-    "api_key": "sk-...", # pragma: allowlist secret
-    "model": "gpt-4o"
-}
+    "api_key": "sk-...",
+    "model_name": "gpt-4o",
+    "is_default": true
+  }'
 ```
 
-### DeepSeek
+### Просмотр моделей
 
-```json
-{
-    "base_url": "https://api.deepseek.com/v1",
-    "api_key": "sk-...", # pragma: allowlist secret
-    "model": "deepseek-chat"
-}
+```bash
+curl http://localhost:8000/api/admin/llm-models \
+  -H "Authorization: Bearer <api_key>"
 ```
 
-### Ollama (локально)
+### Провайдеры
 
-```json
-{
-    "base_url": "http://localhost:11434/v1",
-    "api_key": "ollama", # pragma: allowlist secret
-    "model": "qwen3:32b"
-}
+| Провайдер | base_url | Пример модели |
+|-----------|----------|---------------|
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o` |
+| DeepSeek | `https://api.deepseek.com/v1` | `deepseek-chat` |
+| Ollama | `http://localhost:11434/v1` | `qwen3:32b` |
+| OpenRouter | `https://openrouter.ai/api/v1` | `qwen/qwen3-32b` |
+
+> Провайдер должен поддерживать OpenAI-compatible API (`chat.completions.create` с tool calling).
+
+## Настройки
+
+Настройки хранятся в БД как ключ-значение и управляются через Admin API.
+
+| Ключ | Описание | По умолчанию |
+|------|----------|--------------|
+| `system_prompt` | Системный промпт для LLM | Встроенный промпт Demon Cry |
+| `iteration_limit` | Максимум циклов взаимодействия с LLM | `150` |
+
+### Просмотр настройки
+
+```bash
+curl http://localhost:8000/api/admin/settings \
+  -H "Authorization: Bearer <api_key>"
 ```
 
-### OpenRouter
+### Изменение настройки
 
-```json
-{
-    "base_url": "https://openrouter.ai/api/v1",
-    "api_key": "sk-or-...", # pragma: allowlist secret
-    "model": "qwen/qwen3-32b"
-}
+```bash
+curl -X PATCH http://localhost:8000/api/admin/settings/iteration_limit \
+  -H "Authorization: Bearer <api_key>" \
+  -H "Content-Type: application/json" \
+  -d '{"value": "200"}'
 ```
-
-> **Важно:** провайдер должен поддерживать OpenAI-compatible API (функция `chat.completions.create` с tool calling).
 
 ## Лимит итераций
 
-| Поле | Описание | По умолчанию |
-|------|----------|--------------|
-| `iteration_limit` | Максимальное количество циклов взаимодействия с LLM | `150` |
+Рекомендуемый минимум: **25 итераций**. При меньших значениях модель может не успеть собрать данные для отчёта.
 
-Рекомендуемый минимум: **25 итераций**. При меньших значениях возможна нестабильная работа на сложных расследованиях — модель может не успеть собрать достаточно данных для отчёта.
-
-При достижении лимита модель автоматически формирует итоговый отчёт на основе имеющихся данных.
-
-## SearXNG URL
-
-- **Docker Compose:** `http://searxng:8080` (имя контейнера в сети)
-- **Локальная разработка:** `http://localhost:8080`
-
-Поле `searxng_url` необязательно — по умолчанию используется `http://searxng:8080`.
+При достижении лимита модель автоматически формирует итоговый отчёт.

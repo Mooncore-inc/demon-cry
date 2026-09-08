@@ -13,17 +13,10 @@
 ## Быстрый запуск без установки
 
 ```bash
-# нужен config.json в текущей директории
 nix run github:Mooncore-inc/demon-cry -- --host 0.0.0.0 --port 8000
 ```
 
 Всё, что идёт после `--`, передаётся напрямую в `uvicorn`.
-
-Путь к конфигу можно переопределить переменной окружения:
-
-```bash
-DEMON_CRY_CONFIG=/etc/demon-cry/config.json nix run github:Mooncore-inc/demon-cry
-```
 
 ## NixOS-модуль
 
@@ -50,7 +43,7 @@ DEMON_CRY_CONFIG=/etc/demon-cry/config.json nix run github:Mooncore-inc/demon-cr
 
 ### nixpkgs и `follows`
 
-Флейк пинит `nixpkgs` на `nixos-26.05`. Этот пин влияет только на `packages.default`, `devShells.default` и на дефолтное значение `services.demon-cry.package` — то есть на Python-окружение агента. К SearXNG он отношения не имеет: модуль лишь выставляет опции `services.searx.*`, а сам пакет `searxng` резолвится из nixpkgs вашей системы.
+Флейк пинит `nixpkgs` на `nixos-26.05`. Этот пин влияет только на `packages.default`, `devShells.default` и на дефолтное значение `services.demon-cry.package` — то есть на Python-окружение агента.
 
 Если ваша система на другой ветке nixpkgs, добавьте `follows` — иначе в eval попадёт второй nixpkgs, а Python-окружение соберётся отдельным, вместо переиспользования системного:
 
@@ -87,12 +80,7 @@ nix build github:Mooncore-inc/demon-cry --override-input nixpkgs github:nixos/ni
 
     apiKeyFile = "/run/secrets/demon-cry-api-key";
     masterKeyFile = "/run/secrets/demon-cry-master-key";
-
-    searx.enable = true;
   };
-
-  # файл вида: SEARXNG_SECRET=<openssl rand -hex 32>
-  services.searx.environmentFile = "/run/secrets/searx-env";
 }
 ```
 
@@ -107,15 +95,15 @@ nix build github:Mooncore-inc/demon-cry --override-input nixpkgs github:nixos/ni
 | `services.demon-cry.openFirewall` | bool | `false` | Открыть `port` в firewall |
 | `services.demon-cry.apiKeyFile` | path | — (обязательно) | Файл с ключом LLM-провайдера |
 | `services.demon-cry.masterKeyFile` | path | — (обязательно) | Файл с master-ключом для Bearer-авторизации API |
-| `services.demon-cry.settings` | attrs (JSON) | `{ }` | Несекретная часть `config.json` |
+| `services.demon-cry.settings` | attrs (JSON) | `{ }` | Несекретные настройки (base_url, model и др.) |
 | `services.demon-cry.searx.enable` | bool | `false` | Поднять локальный SearXNG и указать на него агента |
 | `services.demon-cry.searx.port` | port | `8888` | Порт локального SearXNG |
 
-`settings` — это ровно те же поля, что и в `config.json` (см. [Конфигурация](configuration.md)), кроме `api_key` и `master_key`. Модуль требует как минимум `base_url` и `model`, иначе сборка конфигурации падает с assertion.
+`settings` — это несекретные настройки LLM-провайдера (см. [Конфигурация](configuration.md)). Модуль требует как минимум `base_url` и `model`, иначе сборка конфигурации падает с assertion.
 
 ### Секреты
 
-`apiKeyFile` и `masterKeyFile` **не попадают в nix store**. Юнит получает их через systemd `LoadCredential`, а в `preStart` они вклеиваются через `jq` в `config.json`, который лежит в `/run/demon-cry/` (`RuntimeDirectoryMode = 0700`, `DynamicUser`). Завершающие переводы строки обрезаются, так что `echo 'sk-...' > file` безопасен.
+`apiKeyFile` и `masterKeyFile` **не попадают в nix store**. Юнит получает их через systemd `LoadCredential`, а в `preStart` они вклеиваются через `jq` в конфиг, который лежит в `/run/demon-cry/` (`RuntimeDirectoryMode = 0700`, `DynamicUser`). Завершающие переводы строки обрезаются, так что `echo 'sk-...' > file` безопасен.
 
 С [sops-nix](https://github.com/Mic92/sops-nix):
 
@@ -151,7 +139,7 @@ services.demon-cry.settings.searxng_url = "https://searx.example.org";
 
 ```bash
 systemctl status demon-cry
-journalctl -u demon-cry -f          # приложение логирует в journal, не в файл
+journalctl -u demon-cry -f
 
 curl http://127.0.0.1:8000/api/health
 ```
@@ -162,8 +150,9 @@ curl http://127.0.0.1:8000/api/health
 git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
 nix develop
 
-cp example_config.json config.json
-uvicorn demon_cry.__main__:app --reload
+demon-cry migrate upgrade
+demon-cry user create admin --admin
+demon-cry
 ```
 
 Dev-shell даёт Python 3.12 со всеми рантайм-зависимостями, `poetry` и `jq`.
@@ -180,8 +169,9 @@ nix build .#default
 ## Как устроен пакет
 
 - Зависимости берутся из nixpkgs (`python312.withPackages`), не из `poetry.lock`. **При добавлении зависимости в `pyproject.toml` её нужно добавить и в `package.nix`** — иначе модуль просто не зарегистрируется: `ModuleRegistry.discover()` глушит ошибки импорта в лог.
-- `postPatch` заменяет два захардкоженных пути на переменные окружения:
-  - `DEMON_CRY_CONFIG` — путь к `config.json` (по умолчанию `config.json` в рабочей директории);
+- `postPatch` заменяет захардкоженные пути на переменные окружения:
   - `DEMON_CRY_LOG` — файл лога; если не задан, логи идут в stderr (в journal).
-- Бинарь `demon-cry` — это `makeWrapper` вокруг `uvicorn demon_cry.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.
+- Бинарь `demon-cry` — это `makeWrapper`围绕 `uvicorn demon_cry.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.
 - Версия пакета берётся из git-тега через `poetry-dynamic-versioning` и отражается в `demon_cry/__main__.py` автоматически.
+
+> **Важно:** NixOS-модуль в текущей версии генерирует `config.json`, но приложение мигрировало на БД-backed настройки. При использовании NixOS-модуля настройки LLM-провайдера (base_url, model, api_key) необходимо задавать через Admin API после первого запуска.

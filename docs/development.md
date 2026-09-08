@@ -18,14 +18,14 @@ poetry install
 poetry run pre-commit install
 ```
 
-После этого при каждом `git commit` будут автоматически запускаться проверки:
+При каждом `git commit` автоматически запускаются проверки:
 
 - trailing whitespace, end-of-file, смешанные окончания строк
 - отсутствие debug-остатков (`breakpoint`, `print` в production-коде)
 - проверка yaml/toml/json на валидность
 - поиск приватных ключей и секретов
 
-Запуск вручную по всем файлам:
+Запуск вручную:
 
 ```bash
 poetry run pre-commit run --all-files
@@ -34,92 +34,76 @@ poetry run pre-commit run --all-files
 ## Запуск локально
 
 ```bash
-cp example_config.json config.json  # настроить base_url, api_key, model
+# Инициализация БД
+demon-cry migrate upgrade
 
-# Запускает только зависимости (SearXNG)
-docker compose -f docker-compose-dev.yml up -d
+# Создание пользователя
+demon-cry user create admin --admin
 
-# Запуск веб-сервера
-poetry run uvicorn demon_cry.__main__:app --host 0.0.0.0 --port 8000 --reload
+# Запуск сервера
+demon-cry
 ```
 
 Swagger доступен по `http://localhost:8000/docs`.
 
-## SearXNG для локальной разработки
+## Архитектура
 
-Модуль `web_search` работает через SearXNG — метапоисковик, агрегирующий результаты Google, DuckDuckGo, Bing и других. Без него поиск в интернете не будет работать.
-
-Укажите URL в `config.json`:
-
-```json
-{
-    "searxng_url": "http://localhost:8080"
-}
+```
+demon_cry/
+  __main__.py          — FastAPI app, lifespan, router mounting
+  cli.py               — CLI entry point (argparse)
+  core/
+    config.py          — App config (pydantic-settings, DC_* env vars)
+    module_registry.py — OSINT module discovery via entry points
+  api/
+    investigate.py     — Main investigation endpoint
+    health.py          — Health check
+    tools.py           — Tool listing
+    admin/             — Admin CRUD (users, settings, modules, llm_models)
+    dependencies/      — FastAPI DI (auth, database)
+    schemas/           — Pydantic request/response schemas
+  database/
+    engine.py          — SQLAlchemy async engine/session
+    models/            — ORM models (users, settings, modules, llm_models)
+    repositories/      — Repository pattern (data access)
+  services/
+    llm.py             — LLM interaction (chain loop, tool calling)
+  utils/
+    version.py         — Version retrieval
 ```
 
-Проверка:
+### Слой за слоем
 
-```bash
-curl 'http://localhost:8080/search?q=test&format=json'
+1. **core** — конфигурация и реестр модулей (ничего не знает об HTTP)
+2. **database** — ORM модели и репозитории (ничего не знает о API)
+3. **services** — бизнес-логика (LLM взаимодействие)
+4. **api** — HTTP маршруты, schemas, DI (зависит от всех предыдущих)
+5. **cli** — точка входа, парсинг аргументов
+
+## Добавление модуля
+
+Модули — это отдельные pip-пакеты с entry points. Контракт описан в [demon-cry-base](https://github.com/Mooncore-inc/demon-cry-base).
+
+Кратко:
+
+1. Установить `demon-cry-base`
+2. Создать класс, наследующий `BaseModule`
+3. Определить `config_model`, `parameters_model`, `execute()`
+4. Зарегистрировать entry point в `pyproject.toml`:
+
+```toml
+[project.entry-points."demon_cry.modules"]
+my_module = "my_package.module:MyModule"
 ```
 
-Должен вернуться JSON с полем `results`.
+5. Установить пакет: `pip install -e .`
 
-## Добавление своего модуля
-
-Все **OSINT-инструменты наследуются** от `OSINTModule` из `modules/base_modules.py`. Для создания нового модуля:
-
-1. Создайте файл в `modules/`, например `modules/my_tool.py`
-2. Наследуйтесь от `OSINTModule` и реализуйте интерфейс:
-
-```python
-from modules.base_modules import OSINTModule
-
-
-class MyTool(OSINTModule):
-    name = "my_tool"
-    description = "Описание инструмента для LLM"
-    category = "search"  # network / content / search
-    parameters = {
-        "type": "object",
-        "properties": {
-            "query": {"type": "string", "description": "Входные данные"}
-        },
-        "required": ["query"]
-    }
-
-    async def execute(self, **kwargs) -> str:
-        query = kwargs["query"]
-        # Ваша логика
-        return "результат"
-```
-
-Модуль автоматически зарегистрируется при старте приложения благодаря `ModuleRegistry.discover()`.
+Модуль автоматически обнаруживается при старте demon-cry и появляется в Admin API.
 
 ## Тесты
-
-Проект использует [pytest](https://docs.pytest.org/) и [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) для тестирования асинхронного кода.
-
-### Запуск всех тестов
 
 ```bash
 poetry run pytest
 ```
 
-### Запуск конкретного файла
-
-```bash
-poetry run pytest tests/test_llm.py -v
-```
-
-### Структура тестов
-
-```
-tests/
-  __init__.py
-  test_llm.py    # Тесты для demon_cry/llm.py
-```
-
-Тесты используют моки (фейковые объекты) вместо реальных вызовов OpenAI API. Это делает их быстрыми и предсказуемыми — никаких сетевых запросов и траты денег на API.
-
-Подробнее о каждом тесте: [docs/tests.md](tests.md).
+Тесты используют моки вместо реальных вызовов API. Подробнее: [docs/tests.md](tests.md).
