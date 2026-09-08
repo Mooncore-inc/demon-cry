@@ -5,13 +5,6 @@ import sys
 from os import environ
 
 from demon_cry.__main__ import app
-from demon_cry.core.config import (
-    Config,
-    DEFAULTS,
-    get_config_value,
-    init_defaults,
-    set_config_value,
-)
 
 banner = r"""
       _
@@ -75,59 +68,12 @@ def _user_command(args: argparse.Namespace) -> int:
     return 2
 
 
-async def _config_get(key: str) -> int:
-    try:
-        await init_defaults()
-        value = await get_config_value(key)
-        print(value)
-    except KeyError as exc:
-        print(str(exc), file=sys.stderr)
-        return 1
-    return 0
-
-
-async def _config_set(key: str, value: str) -> int:
-    try:
-        await set_config_value(key, value)
-        print(f"Set {key}")
-    except KeyError as exc:
-        print(str(exc), file=sys.stderr)
-        return 1
-    return 0
-
-
-def _config_command(args: argparse.Namespace) -> int:
-    if args.config_action == "get":
-        return asyncio.run(_config_get(args.key))
-    if args.config_action == "set":
-        return asyncio.run(_config_set(args.key, args.value))
-    if args.config_action == "list":
-        for key in DEFAULTS:
-            print(key)
-        return 0
-    if args.config_action == "defaults":
-        for key, value in DEFAULTS.items():
-            print(f"{key} = {value}")
-        return 0
-    return 2
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="demon-cry",
         description="Run the Demon Cry OSINT agent API server.",
     )
     subparsers = parser.add_subparsers(dest="command")
-
-    config_parser = subparsers.add_parser("config", help="Read/write config")
-    config_sub = config_parser.add_subparsers(dest="config_action", required=True)
-    config_set = config_sub.add_parser("set", help="Set a config value")
-    config_set.add_argument("key", help="Key, e.g. server_port or iteration_limit")
-    config_set.add_argument("value", help="Value")
-    config_get = config_sub.add_parser("get", help="Print a config value")
-    config_get.add_argument("key", help="Key, e.g. server_port or iteration_limit")
-    config_sub.add_parser("list", help="List all config keys")
-    config_sub.add_parser("defaults", help="Show default values")
 
     migrate_parser = subparsers.add_parser(
         "migrate", help="Run database migrations (Alembic)"
@@ -171,9 +117,6 @@ def main():
         filemode="a",
     )
 
-    if getattr(args, "command", None) == "config":
-        raise SystemExit(_config_command(args))
-
     if getattr(args, "command", None) == "migrate":
         raise SystemExit(_migrate_command(args))
 
@@ -182,12 +125,10 @@ def main():
 
     import uvicorn
 
-    config = asyncio.run(Config.load())
-
     if not args.no_banner:
         print(banner)
 
-    uvicorn.run(app, host=config.server_host, port=config.server_port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":

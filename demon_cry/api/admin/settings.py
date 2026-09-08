@@ -5,7 +5,7 @@ from demon_cry.api.schemas.settings import SettingResponse, SettingUpdate
 
 settings_router = APIRouter(prefix="/settings")
 
-@settings_router.get("/")
+@settings_router.get("/", response_model=list[SettingResponse])
 async def get_all_settings(set_repo: SettingsRepo):
     settings = await set_repo.get_all()
     if not settings:

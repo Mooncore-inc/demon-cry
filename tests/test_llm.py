@@ -83,14 +83,14 @@ def mock_registry():
 
 
 @pytest.fixture
-def llm(mock_config, mock_registry):
+def llm(mock_registry):
     return LLM(
-        base_url=mock_config.base_url,
-        api_key=mock_config.api_key,
-        model=mock_config.model,
-        config=mock_config,
+        base_url="http://localhost:8000",
+        api_key="test-key",  # pragma: allowlist secret
+        model="test-model",
         registry=mock_registry,
         system_prompt="You are a test.",
+        iteration_limit=5,
     )
 
 
@@ -243,19 +243,13 @@ async def test_run_chain_registry_error(llm, mock_registry):
 
 @pytest.mark.asyncio
 async def test_run_chain_iteration_limit(mock_registry):
-    config = MagicMock()
-    config.base_url = "http://localhost:8000"
-    config.api_key = "test-key"  # pragma: allowlist secret
-    config.model = "test-model"
-    config.iteration_limit = 2
-
     llm = LLM(
         base_url="http://localhost:8000",
-        api_key="test-key",  # pragma: allowlist secret
+        api_key="test-key",  # pragma: allowlist secret  # pragma: allowlist secret
         model="test-model",
-        config=config,
         registry=mock_registry,
         system_prompt="test",
+        iteration_limit=2,
     )
     mock_registry.get_tools_schema.return_value = [
         {"type": "function", "function": {"name": "tool", "description": "d", "parameters": {}}}
