@@ -231,3 +231,4 @@ result-*
 
 # Database
 *.db
+.opencode/
