@@ -1,4 +1,4 @@
-{ lib, stdenvNoCC, makeWrapper, python312, src, version ? "0.7.0" }:
+{ lib, stdenvNoCC, makeWrapper, python312, src, version ? "0.0.0-dev" }:
 
 let
   pythonEnv = python312.withPackages (ps: [
