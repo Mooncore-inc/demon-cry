@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import logging
 import sys
-from os import environ
 
 from demon_cry.__main__ import app
 from demon_cry.core.config import config
@@ -116,7 +115,7 @@ def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)-8s] %(funcName)s@%(filename)s:%(lineno)d) -> %(message)s",
-        filename=environ.get("DEMON_CRY_LOG") or None,
+        filename=config.log_file,
         filemode="a",
     )
 
