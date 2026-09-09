@@ -19,6 +19,7 @@ banner = r"""
 
 def _build_alembic_config():
     from pathlib import Path
+
     from alembic.config import Config as AlembicConfig
 
     ini_path = Path(__file__).parent / "alembic.ini"
@@ -45,6 +46,7 @@ def _migrate_command(args: argparse.Namespace) -> int:
 
 async def _user_create(username: str, is_admin: bool) -> int:
     import secrets
+
     from demon_cry.database.engine import async_session_factory
     from demon_cry.database.repositories.users import UserRepository
 
@@ -84,7 +86,9 @@ def build_parser() -> argparse.ArgumentParser:
     upgrade_parser.add_argument(
         "revision", nargs="?", default="head", help="Target revision (default: head)"
     )
-    downgrade_parser = migrate_sub.add_parser("downgrade", help="Downgrade to a revision")
+    downgrade_parser = migrate_sub.add_parser(
+        "downgrade", help="Downgrade to a revision"
+    )
     downgrade_parser.add_argument(
         "revision", nargs="?", default="-1", help="Target revision (default: -1)"
     )
@@ -95,9 +99,7 @@ def build_parser() -> argparse.ArgumentParser:
     user_sub = user_parser.add_subparsers(dest="user_action", required=True)
     user_create = user_sub.add_parser("create", help="Create a new user")
     user_create.add_argument("username", help="Username")
-    user_create.add_argument(
-        "--admin", action="store_true", help="Create as admin"
-    )
+    user_create.add_argument("--admin", action="store_true", help="Create as admin")
 
     parser.add_argument(
         "--no-banner",

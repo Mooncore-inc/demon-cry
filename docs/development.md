@@ -31,6 +31,25 @@ poetry run pre-commit install
 poetry run pre-commit run --all-files
 ```
 
+## Линтер и форматтер
+
+Проект использует [ruff](https://docs.astral.sh/ruff/) для линтинга и форматирования.
+
+Запуск:
+
+```bash
+poetry run ruff check        # линтинг
+poetry run ruff check --fix  # автоисправление
+poetry run ruff format       # форматирование
+```
+
+Конфигурация в `pyproject.toml`:
+- `E` — pycodestyle ошибки
+- `F` — pyflakes (неиспользуемые переменные и импорты)
+- `I` — isort (сортировка импортов)
+- `UP` — pyupgrade (современный синтаксис)
+- `B` — flake8-bugbear (антипаттерны)
+
 ## Запуск локально
 
 ```bash

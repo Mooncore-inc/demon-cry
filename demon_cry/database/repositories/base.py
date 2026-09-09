@@ -1,14 +1,13 @@
-from typing import TypeVar, Generic, Type, Sequence
+from collections.abc import Sequence
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from demon_cry.database.models.base import BaseModel
 
-ModelType = TypeVar("ModelType", bound=BaseModel)
 
-
-class BaseRepository(Generic[ModelType]):
-    def __init__(self, session: AsyncSession, model: Type[ModelType]):
+class BaseRepository[ModelType: BaseModel]:
+    def __init__(self, session: AsyncSession, model: type[ModelType]):
         self.session = session
         self.model = model
 
@@ -20,7 +19,9 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_all(self, limit: int = 100, offset: int = 0, **filters) -> Sequence[ModelType]:
+    async def get_all(
+        self, limit: int = 100, offset: int = 0, **filters
+    ) -> Sequence[ModelType]:
         stmt = select(self.model).filter_by(**filters).limit(limit).offset(offset)
         result = await self.session.execute(stmt)
         return result.scalars().all()
