@@ -52,6 +52,7 @@ poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 enable = true
 vcs = "git"
 style = "pep440"
+pattern = "default-unprefixed"
 
 [tool.ruff]
 line-length = 88
