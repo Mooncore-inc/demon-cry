@@ -27,10 +27,6 @@ class ModuleRegistry:
         self.modules: dict[str, BaseModule] = {}
         self.session_factory = async_session_factory
 
-    async def register(self, module: BaseModule):
-        self.modules[module.name] = module
-        logger.info("Registered module: %s", module.name)
-
     async def discover(self):
         eps = entry_points(group="demon_cry.modules")
         async with self.session_factory() as session:
@@ -39,7 +35,8 @@ class ModuleRegistry:
                 try:
                     module_class = ep.load()
                     instance = module_class()
-                    await self.register(instance)
+                    self.modules[instance.name] = instance
+                    logger.info("Registered module: %s", instance.name)
                     existing = await repo.get(module_name=instance.name)
                     if not existing:
                         defaults = instance.config_model().model_dump()

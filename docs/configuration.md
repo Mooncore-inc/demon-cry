@@ -9,7 +9,7 @@ Demon Cry использует комбинацию переменных окр�
 | `DC_DB_URL` | URL базы данных (SQLAlchemy async) | `sqlite+aiosqlite:///database.db` |
 | `DC_HOST` | Адрес API-сервера | `127.0.0.1` |
 | `DC_PORT` | Порт API-сервера | `8000` |
-| `DEMON_CRY_LOG` | Путь к файлу лога (stderr если не задано) | — |
+| `DC_LOG_FILE` | Путь к файлу лога (stderr если не задано) | — |
 
 Пример:
 
