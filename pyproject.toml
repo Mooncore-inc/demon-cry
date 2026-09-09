@@ -34,7 +34,7 @@ demon-cry = "demon_cry.cli:main"
 dev = [
     "pre-commit (>=4.6.1,<5.0.0)",
     "pytest (>=8.0.0,<9.0.0)",
-    "pytest-asyncio (>=0.24.0,<1.0.0)",
+    "pytest-asyncio (>=0.24.0,<1.4.0)",
     "poetry-dynamic-versioning (>=1.0.0,<2.0.0)",
     "ruff (>=0.16.6,<0.17.0)",
 ]
