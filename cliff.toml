@@ -1,0 +1,28 @@
+[changelog]
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {{ commit.message | split(pat="\n") | first | trim }} ({{ commit.id | truncate(length=7, end="") }})\
+{% endfor %}
+{% endfor %}
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+commit_preprocessors = [
+    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}])" },
+]
+commit_parsers = [
+    { message = "^feat", group = "🚀 Новые функции" },
+    { message = "^fix", group = "🐛 Исправления" },
+    { message = "^refactor", group = "♻️ Рефакторинг" },
+    { message = "^docs", group = "📚 Документация" },
+    { message = "^chore", group = "🔧 Обслуживание" },
+    { message = "^ci", group = "⚙️ CI/CD" },
+]
