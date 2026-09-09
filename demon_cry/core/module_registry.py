@@ -1,11 +1,12 @@
 import logging
 from importlib.metadata import entry_points
-from typing import Any, Dict, TypedDict
+from typing import Any, TypedDict
 
 from demon_cry_base import BaseModule
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import ModuleRepository
+
 
 class ToolFunction(TypedDict):
     name: str
@@ -17,12 +18,13 @@ class ToolDefinition(TypedDict):
     type: str
     function: ToolFunction
 
+
 logger = logging.getLogger(__name__)
 
 
 class ModuleRegistry:
     def __init__(self):
-        self.modules: Dict[str, BaseModule] = {}
+        self.modules: dict[str, BaseModule] = {}
         self.session_factory = async_session_factory
 
     async def register(self, module: BaseModule):
@@ -42,9 +44,7 @@ class ModuleRegistry:
                     if not existing:
                         defaults = instance.config_model().model_dump()
                         await repo.create(
-                            module_name=instance.name,
-                            config=defaults,
-                            enabled=False
+                            module_name=instance.name, config=defaults, enabled=False
                         )
                 except Exception:
                     logger.exception("Failed to load module: %s", ep.name)
@@ -52,14 +52,16 @@ class ModuleRegistry:
     async def get_tools_schema(self) -> list[ToolDefinition]:
         tools: list[ToolDefinition] = []
         for module in self.modules.values():
-            tools.append({
-                "type": "function",
-                "function": {
-                    "name": module.name,
-                    "description": f"[Category: {module.category}] {module.description}",
-                    "parameters": module.parameters_model.model_json_schema()
+            tools.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": module.name,
+                        "description": f"[Category: {module.category}] {module.description}",
+                        "parameters": module.parameters_model.model_json_schema(),
+                    },
                 }
-            })
+            )
         return tools
 
     async def execute(self, tool_name: str, **kwargs) -> dict:

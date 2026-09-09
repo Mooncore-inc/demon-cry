@@ -1,4 +1,4 @@
-from sqlalchemy import String, JSON, Boolean
+from sqlalchemy import JSON, Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from demon_cry.database.models.base import BaseModel

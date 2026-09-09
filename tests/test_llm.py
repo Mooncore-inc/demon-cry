@@ -1,13 +1,13 @@
 import json
 from dataclasses import dataclass
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from demon_cry.services.llm import LLM, ToolUsage
 
-
 # --- Mock helpers for OpenAI response objects ---
+
 
 @dataclass
 class MockReasoningTokens:
@@ -64,6 +64,7 @@ class MockResponse:
 
 # --- Fixtures ---
 
+
 @pytest.fixture
 def mock_config():
     config = MagicMock()
@@ -94,18 +95,23 @@ def llm(mock_registry):
     )
 
 
-def make_usage(total=10, prompt=5, completion=5, reasoning=0, cache_hit=0, cache_miss=0):
+def make_usage(
+    total=10, prompt=5, completion=5, reasoning=0, cache_hit=0, cache_miss=0
+):
     return MockUsage(
         total_tokens=total,
         prompt_tokens=prompt,
         completion_tokens=completion,
-        completion_tokens_details=MockCompletionTokensDetails(reasoning_tokens=reasoning),
+        completion_tokens_details=MockCompletionTokensDetails(
+            reasoning_tokens=reasoning
+        ),
         prompt_cache_hit_tokens=cache_hit,
         prompt_cache_miss_tokens=cache_miss,
     )
 
 
 # --- Edge case helpers ---
+
 
 def make_tool_call_raw(id: str, name: str, raw_arguments: str) -> MockToolCall:
     tc = MockToolCall.__new__(MockToolCall)
@@ -115,6 +121,7 @@ def make_tool_call_raw(id: str, name: str, raw_arguments: str) -> MockToolCall:
 
 
 # --- Tests ---
+
 
 @pytest.mark.asyncio
 async def test_run_chain_no_tools(llm, mock_registry):
@@ -139,7 +146,10 @@ async def test_run_chain_no_tools(llm, mock_registry):
 @pytest.mark.asyncio
 async def test_run_chain_with_tools(llm, mock_registry):
     mock_registry.get_tools_schema.return_value = [
-        {"type": "function", "function": {"name": "test_tool", "description": "desc", "parameters": {}}}
+        {
+            "type": "function",
+            "function": {"name": "test_tool", "description": "desc", "parameters": {}},
+        }
     ]
 
     tool_call = MockToolCall(id="call_1", name="test_tool", arguments={"query": "test"})
@@ -149,10 +159,12 @@ async def test_run_chain_with_tools(llm, mock_registry):
     second_msg = MockMessage(content="Result is done", tool_calls=None)
     second_usage = make_usage(total=10, prompt=5, completion=5)
 
-    llm.client.chat.completions.create = AsyncMock(side_effect=[
-        MockResponse(choices=[MockChoice(message=first_msg)], usage=first_usage),
-        MockResponse(choices=[MockChoice(message=second_msg)], usage=second_usage),
-    ])
+    llm.client.chat.completions.create = AsyncMock(
+        side_effect=[
+            MockResponse(choices=[MockChoice(message=first_msg)], usage=first_usage),
+            MockResponse(choices=[MockChoice(message=second_msg)], usage=second_usage),
+        ]
+    )
 
     content, tools_used, tokens = await llm.run_chain(user_query="test query")
 
@@ -187,18 +199,26 @@ async def test_process_tool_calls(llm, mock_registry):
 
 # --- Edge case tests ---
 
+
 @pytest.mark.asyncio
 async def test_run_chain_invalid_json_in_tool_call(llm, mock_registry):
     mock_registry.get_tools_schema.return_value = [
-        {"type": "function", "function": {"name": "test_tool", "description": "desc", "parameters": {}}}
+        {
+            "type": "function",
+            "function": {"name": "test_tool", "description": "desc", "parameters": {}},
+        }
     ]
 
-    bad_tc = make_tool_call_raw(id="call_1", name="test_tool", raw_arguments="{invalid json!!!")
+    bad_tc = make_tool_call_raw(
+        id="call_1", name="test_tool", raw_arguments="{invalid json!!!"
+    )
     first_msg = MockMessage(content=None, tool_calls=[bad_tc])
     first_usage = make_usage(total=10, prompt=5, completion=5)
 
     llm.client.chat.completions.create = AsyncMock(
-        return_value=MockResponse(choices=[MockChoice(message=first_msg)], usage=first_usage)
+        return_value=MockResponse(
+            choices=[MockChoice(message=first_msg)], usage=first_usage
+        )
     )
 
     with pytest.raises(json.JSONDecodeError):
@@ -217,7 +237,10 @@ async def test_process_tool_calls_invalid_json(llm, mock_registry):
 @pytest.mark.asyncio
 async def test_run_chain_registry_error(llm, mock_registry):
     mock_registry.get_tools_schema.return_value = [
-        {"type": "function", "function": {"name": "test_tool", "description": "desc", "parameters": {}}}
+        {
+            "type": "function",
+            "function": {"name": "test_tool", "description": "desc", "parameters": {}},
+        }
     ]
     mock_registry.execute.return_value = {"error": "Unknown module: test_tool"}
 
@@ -228,10 +251,12 @@ async def test_run_chain_registry_error(llm, mock_registry):
     second_msg = MockMessage(content="Done", tool_calls=None)
     second_usage = make_usage(total=10, prompt=5, completion=5)
 
-    llm.client.chat.completions.create = AsyncMock(side_effect=[
-        MockResponse(choices=[MockChoice(message=first_msg)], usage=first_usage),
-        MockResponse(choices=[MockChoice(message=second_msg)], usage=second_usage),
-    ])
+    llm.client.chat.completions.create = AsyncMock(
+        side_effect=[
+            MockResponse(choices=[MockChoice(message=first_msg)], usage=first_usage),
+            MockResponse(choices=[MockChoice(message=second_msg)], usage=second_usage),
+        ]
+    )
 
     content, tools_used, tokens = await llm.run_chain(user_query="test query")
 
@@ -252,7 +277,10 @@ async def test_run_chain_iteration_limit(mock_registry):
         iteration_limit=2,
     )
     mock_registry.get_tools_schema.return_value = [
-        {"type": "function", "function": {"name": "tool", "description": "d", "parameters": {}}}
+        {
+            "type": "function",
+            "function": {"name": "tool", "description": "d", "parameters": {}},
+        }
     ]
 
     tool_call = MockToolCall(id="call_1", name="tool", arguments={"x": 1})

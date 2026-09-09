@@ -74,7 +74,6 @@ Your mission: gather, analyze, and synthesize information from PUBLIC sources.
 DEFAULT_ITERATION_LIMIT = 150
 
 
-
 class TokenUsage(BaseModel):
     total: int = 0
     prompt: int = 0
@@ -85,24 +84,24 @@ class TokenUsage(BaseModel):
 
     def __add__(self, other):
         return TokenUsage(
-            total = self.total + other.total,
-            prompt = self.prompt + other.prompt,
-            completion = self.completion + other.completion,
-            reasoning = self.reasoning + other.reasoning,
-            cache_hit = self.cache_hit + other.cache_hit,
-            cache_miss = self.cache_miss + other.cache_miss,
+            total=self.total + other.total,
+            prompt=self.prompt + other.prompt,
+            completion=self.completion + other.completion,
+            reasoning=self.reasoning + other.reasoning,
+            cache_hit=self.cache_hit + other.cache_hit,
+            cache_miss=self.cache_miss + other.cache_miss,
         )
 
     @classmethod
     def from_usage(cls, usage) -> "TokenUsage":
         details = getattr(usage, "completion_tokens_details", None)
         return cls(
-            total = usage.total_tokens,
-            prompt = usage.prompt_tokens,
-            completion = usage.completion_tokens,
-            reasoning = getattr(details, "reasoning_tokens", 0),
-            cache_hit = getattr(usage, 'prompt_cache_hit_tokens', 0),
-            cache_miss = getattr(usage, 'prompt_cache_miss_tokens', 0),
+            total=usage.total_tokens,
+            prompt=usage.prompt_tokens,
+            completion=usage.completion_tokens,
+            reasoning=getattr(details, "reasoning_tokens", 0),
+            cache_hit=getattr(usage, "prompt_cache_hit_tokens", 0),
+            cache_miss=getattr(usage, "prompt_cache_miss_tokens", 0),
         )
 
 
@@ -161,12 +160,14 @@ class LLM:
         self.system_prompt = system_prompt
         self.iteration_limit = iteration_limit
 
-    async def run_chain(self, user_query: str) -> tuple[str | None, ToolUsage, TokenUsage]:
+    async def run_chain(
+        self, user_query: str
+    ) -> tuple[str | None, ToolUsage, TokenUsage]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
         messages = [
             {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": user_query}
-            ]
+            {"role": "user", "content": user_query},
+        ]
         tools_list = await self.registry.get_tools_schema()
         tools_used = ToolUsage()
         tokens = TokenUsage()
@@ -174,7 +175,9 @@ class LLM:
         for i in range(self.iteration_limit):
             tool_choice = "none" if i == self.iteration_limit - 1 else "auto"
 
-            response_message, usage = await self._call_llm(messages=messages, tools_list=tools_list, tool_choice=tool_choice)
+            response_message, usage = await self._call_llm(
+                messages=messages, tools_list=tools_list, tool_choice=tool_choice
+            )
 
             tokens += TokenUsage.from_usage(usage)
 
@@ -182,30 +185,34 @@ class LLM:
                 return response_message.content, tools_used, tokens
 
             messages.append(response_message)
-            await self._process_tool_calls(response_message.tool_calls, messages, tools_used)
+            await self._process_tool_calls(
+                response_message.tool_calls, messages, tools_used
+            )
 
         return None, tools_used, tokens
 
     async def _call_llm(
-            self,
-            messages: list[dict],
-            tools_list: list[dict],
-            tool_choice: str,
-            temperature: float = 0.3
-        ) -> tuple[Any, Any]:
+        self,
+        messages: list[dict],
+        tools_list: list[dict],
+        tool_choice: str,
+        temperature: float = 0.3,
+    ) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
-            model = self.model,
-            messages = messages,
-            temperature = temperature,
-            tools = tools_list,
-            tool_choice = tool_choice,
+            model=self.model,
+            messages=messages,
+            temperature=temperature,
+            tools=tools_list,
+            tool_choice=tool_choice,
         )
 
         logger.info("Tokens used: %s", completion.usage)
         return completion.choices[0].message, completion.usage
 
-    async def _process_tool_calls(self, tool_calls: list, messages: list[dict], tools_used: ToolUsage):
+    async def _process_tool_calls(
+        self, tool_calls: list, messages: list[dict], tools_used: ToolUsage
+    ):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
 
         async def execute_single(tool_call):
@@ -221,7 +228,7 @@ class LLM:
             return {
                 "role": "tool",
                 "tool_call_id": tool_call.id,
-                "content": json.dumps(result, ensure_ascii=False)
+                "content": json.dumps(result, ensure_ascii=False),
             }
 
         results = await asyncio.gather(*(execute_single(tc) for tc in tool_calls))

@@ -3,22 +3,31 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from demon_cry.api.dependencies import CurrentUser, LLMRepo, AppRegistry, SettingsRepo
-from demon_cry.services.llm import LLM, TokenUsage, ToolUsage, DEFAULT_SYSTEM_PROMPT, DEFAULT_ITERATION_LIMIT
+from demon_cry.api.dependencies import AppRegistry, CurrentUser, LLMRepo, SettingsRepo
+from demon_cry.services.llm import (
+    DEFAULT_ITERATION_LIMIT,
+    DEFAULT_SYSTEM_PROMPT,
+    LLM,
+    TokenUsage,
+    ToolUsage,
+)
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 class OSINTRequest(BaseModel):
     target: str
     llm_model_id: int | None = None
+
 
 class OSINTResponse(BaseModel):
     status: str
     result: str
     tools_used: ToolUsage = ToolUsage()
     tokens: TokenUsage = TokenUsage()
+
 
 @router.post(path="/investigate")
 async def investigate(
@@ -27,7 +36,7 @@ async def investigate(
     llm_repo: LLMRepo,
     set_repo: SettingsRepo,
     user: CurrentUser,
-    ):
+):
     try:
         if req.llm_model_id:
             model = await llm_repo.get_by_id(req.llm_model_id)
@@ -40,8 +49,14 @@ async def investigate(
         system_prompt_row = await set_repo.get(key="system_prompt")
         iteration_limit_row = await set_repo.get(key="iteration_limit")
 
-        system_prompt = system_prompt_row.value if system_prompt_row else DEFAULT_SYSTEM_PROMPT
-        iteration_limit = int(iteration_limit_row.value) if iteration_limit_row else DEFAULT_ITERATION_LIMIT
+        system_prompt = (
+            system_prompt_row.value if system_prompt_row else DEFAULT_SYSTEM_PROMPT
+        )
+        iteration_limit = (
+            int(iteration_limit_row.value)
+            if iteration_limit_row
+            else DEFAULT_ITERATION_LIMIT
+        )
 
         llm = LLM(
             base_url=model.base_url,

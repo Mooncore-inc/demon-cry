@@ -1,10 +1,6 @@
 from fastapi import APIRouter
 
-from demon_cry.api import (
-    investigate,
-    health,
-    tools
-)
+from demon_cry.api import health, investigate, tools
 from demon_cry.api.admin import admin_router
 
 router = APIRouter(prefix="/api")

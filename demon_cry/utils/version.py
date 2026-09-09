@@ -1,5 +1,6 @@
 from importlib.metadata import PackageNotFoundError, version
 
+
 def get_version():
     try:
         _version = version("demon-cry")

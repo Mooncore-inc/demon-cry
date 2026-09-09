@@ -31,6 +31,7 @@ dev = [
     "pytest (>=8.0.0,<9.0.0)",
     "pytest-asyncio (>=0.24.0,<1.0.0)",
     "poetry-dynamic-versioning (>=1.0.0,<2.0.0)",
+    "ruff (>=0.16.6,<0.17.0)",
 ]
 
 [tool.poetry]
@@ -42,12 +43,29 @@ version = "0.0.0"
 [tool.poetry.requires-plugins]
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
-[tool.poetry.dependencies]
-
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
 style = "pep440"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes (неиспользуемые переменные и импорты)
+    "I",   # isort (сортировка импортов)
+    "UP",  # pyupgrade (современный синтаксис)
+    "B",   # flake8-bugbear (антипаттерны, изменяемые аргументы по умолчанию)
+]
+ignore = [
+    "E501", # длину строки контролирует ruff-format
+]
+
+[tool.ruff.format]
+quote-style = "double"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]

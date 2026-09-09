@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException
 
 from demon_cry.api.dependencies import LLMRepo
-from demon_cry.api.schemas.llm_models import LLMModelResponse, LLMModelCreate, LLMModelUpdate
+from demon_cry.api.schemas.llm_models import (
+    LLMModelCreate,
+    LLMModelResponse,
+    LLMModelUpdate,
+)
 
 llm_models_router = APIRouter(prefix="/llm-models")
 
@@ -23,7 +27,9 @@ async def get_model(model_name: str, llm_repo: LLMRepo):
 async def create_model(body: LLMModelCreate, llm_repo: LLMRepo):
     existing = await llm_repo.get(model_name=body.model_name)
     if existing:
-        raise HTTPException(status_code=409, detail="Model with this name already exists")
+        raise HTTPException(
+            status_code=409, detail="Model with this name already exists"
+        )
     return await llm_repo.create(**body.model_dump())
 
 

@@ -5,10 +5,12 @@ from demon_cry.api.schemas.modules import ModuleResponse, ModuleUpdate
 
 modules_router = APIRouter(prefix="/modules")
 
+
 @modules_router.get("/", response_model=list[ModuleResponse])
 async def get_all_modules(module_repo: ModuleRepo):
     modules = await module_repo.get_all()
     return modules
+
 
 @modules_router.get("/{module_name}", response_model=ModuleResponse)
 async def get_module(module_name: str, module_repo: ModuleRepo):
@@ -16,6 +18,7 @@ async def get_module(module_name: str, module_repo: ModuleRepo):
     if not module:
         raise HTTPException(status_code=404, detail="Module not found")
     return module
+
 
 @modules_router.patch("/{module_name}", response_model=ModuleResponse)
 async def update_module(module_name: str, body: ModuleUpdate, module_repo: ModuleRepo):
