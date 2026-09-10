@@ -49,6 +49,8 @@ poetry run ruff format       # форматирование
 - `I` — isort (сортировка импортов)
 - `UP` — pyupgrade (современный синтаксис)
 - `B` — flake8-bugbear (антипаттерны)
+- `SIM` — flake8-simplify (упрощение синтаксиса)
+- `RET` — flake8-return (оптимизация return)
 
 ## Запуск локально
 

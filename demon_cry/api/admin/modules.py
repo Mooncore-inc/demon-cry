@@ -8,8 +8,7 @@ modules_router = APIRouter(prefix="/modules")
 
 @modules_router.get("/", response_model=list[ModuleResponse])
 async def get_all_modules(module_repo: ModuleRepo):
-    modules = await module_repo.get_all()
-    return modules
+    return await module_repo.get_all()
 
 
 @modules_router.get("/{module_name}", response_model=ModuleResponse)
