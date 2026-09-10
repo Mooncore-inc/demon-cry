@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from demon_cry.api.dependencies import UserRepo
 from demon_cry.api.schemas.users import UserCreate, UserResponse, UserUpdate
+from demon_cry.utils.security import hash_token
 
 users_router = APIRouter(prefix="/users")
 
@@ -11,7 +12,9 @@ users_router = APIRouter(prefix="/users")
 @users_router.post(path="/", status_code=201, response_model=UserResponse)
 async def create_user(body: UserCreate, user_repo: UserRepo):
     token = secrets.token_urlsafe(32)
-    return await user_repo.create(username=body.username, credentials=token)
+    user = await user_repo.create(username=body.username, credentials=hash_token(token))
+    user.credentials = token
+    return user
 
 
 @users_router.get(path="/{user_id}", response_model=UserResponse)
