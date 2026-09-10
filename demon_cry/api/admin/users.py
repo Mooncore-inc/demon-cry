@@ -11,9 +11,7 @@ users_router = APIRouter(prefix="/users")
 @users_router.post(path="/", status_code=201, response_model=UserResponse)
 async def create_user(body: UserCreate, user_repo: UserRepo):
     token = secrets.token_urlsafe(32)
-
-    user = await user_repo.create(username=body.username, credentials=token)
-    return user
+    return await user_repo.create(username=body.username, credentials=token)
 
 
 @users_router.get(path="/{user_id}", response_model=UserResponse)
