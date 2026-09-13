@@ -1,25 +1,30 @@
 # Установка
 
-## pip (рекомендуется)
+## Из PyPI (пользователям)
 
 ```bash
+pipx install demon-cry
+# или:
+uv tool install demon-cry
+# или классика:
 pip install demon-cry
 ```
 
-По умолчанию используется SQLite (`database.db` в рабочей директории). Для PostgreSQL:
+По умолчанию используется SQLite (`database.db` в рабочей директории). Для PostgreSQL-экстры:
 
 ```bash
-pip install demon-cry[postgres]
+pipx install "demon-cry[postgres]"
+# uv:
+uv tool install "demon-cry[postgres]"
 DC_DB_URL="postgresql+asyncpg://user:pass@localhost/demoncry" demon-cry
 ```
 
-## Из исходников
+## Из исходников (разработка)
 
 ```bash
 git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
-pip install poetry
-poetry install
-demon-cry migrate upgrade
+uv sync --locked --group dev
+uv run demon-cry migrate upgrade
 ```
 
 ## NixOS
