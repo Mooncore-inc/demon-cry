@@ -9,7 +9,6 @@ Demon Cry — автономный OSINT-агент, использующий LL
 
 ```bash
 uv tool install demon-cry
-# или: pipx install demon-cry
 # или: pip install demon-cry
 demon-cry migrate upgrade
 demon-cry user create admin --admin

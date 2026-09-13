@@ -3,8 +3,6 @@
 ## Из PyPI (пользователям)
 
 ```bash
-pipx install demon-cry
-# или:
 uv tool install demon-cry
 # или классика:
 pip install demon-cry
@@ -13,9 +11,9 @@ pip install demon-cry
 По умолчанию используется SQLite (`database.db` в рабочей директории). Для PostgreSQL-экстры:
 
 ```bash
-pipx install "demon-cry[postgres]"
-# uv:
 uv tool install "demon-cry[postgres]"
+# или:
+pip install "demon-cry[postgres]"
 DC_DB_URL="postgresql+asyncpg://user:pass@localhost/demoncry" demon-cry
 ```
 
