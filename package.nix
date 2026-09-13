@@ -1,15 +1,27 @@
 { lib, stdenvNoCC, makeWrapper, python312, src, version ? "0.0.0-dev" }:
 
 let
+  # Runtime deps synced with pyproject.toml (requires-python >=3.12,<3.15).
+  # ModuleRegistry.discover() swallows ImportError, so pythonEnv must cover
+  # every runtime import or modules silently fail to load.
   pythonEnv = python312.withPackages (ps: [
-    ps.aiodns
-    ps.asyncwhois
     ps.fastapi
     ps.openai
     ps.httpx
     ps.pydantic
-    ps.selectolax
+    ps.pydantic-settings
+    ps.sqlalchemy
+    ps.alembic
+    ps.aiosqlite
     ps.uvicorn
+    # NOTE: demon-cry-base IS a runtime dep (demon_cry/core/module_registry.py
+    # imports BaseModule from it) but is not in nixpkgs — package it as a
+    # separate derivation (e.g. buildPythonPackage from PyPI) and add here.
+    # NOTE: aiodns/asyncwhois/selectolax removed — no imports found via
+    # `rg -n "aiodns|asyncwhois|selectolax" demon_cry/ pyproject.toml`.
+    # NOTE: postgres support needs ps.asyncpg — add it here only if the
+    # Nix package must talk to postgres (pyproject `postgres` extra).
+    # ps.asyncpg
   ] ++ ps.uvicorn.optional-dependencies.standard);
 in
 stdenvNoCC.mkDerivation {
@@ -24,7 +36,7 @@ stdenvNoCC.mkDerivation {
     runHook preInstall
 
     mkdir -p $out/lib/demon-cry $out/bin
-    cp -r demon_cry modules $out/lib/demon-cry/
+    cp -r demon_cry $out/lib/demon-cry/
 
     makeWrapper ${pythonEnv}/bin/uvicorn $out/bin/demon-cry \
       --prefix PYTHONPATH : $out/lib/demon-cry \
