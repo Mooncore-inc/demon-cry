@@ -1,27 +1,23 @@
 [project]
 name = "demon-cry"
 requires-python = ">=3.12, <3.15"
-readme = { file = "README.md", content-type = "text/markdown" }
+readme = "README.md"
 license = { file = "LICENSE" }
-authors = [
-    {name = "Fazzyt"}, {name = "mooncore-inc"}
-]
-maintainers = [
-    {name = "Fazzyt"}
-]
+authors = [{ name = "Fazzyt" }, { name = "mooncore-inc" }]
+maintainers = [{ name = "Fazzyt" }]
 dynamic = ["version"]
 
 dependencies = [
     "fastapi",
     "openai",
     "httpx",
-    "pydantic>=2.0",
     "uvicorn[standard]",
-    "demon-cry-base (>=0.3.1,<0.4.0)",
-    "sqlalchemy (>=2.0.52,<3.0.0)",
-    "alembic (>=1.13,<2.0)",
-    "aiosqlite (>=0.19,<0.21)",
-    "pydantic-settings (>=2.15.0,<3.0.0)",
+    "pydantic>=2.0",
+    "demon-cry-base>=0.3.1,<0.4.0",
+    "sqlalchemy>=2.0.52,<3.0.0",
+    "alembic>=1.13,<2.0",
+    "aiosqlite>=0.19,<0.21",
+    "pydantic-settings>=2.15.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
@@ -32,27 +28,18 @@ demon-cry = "demon_cry.cli:main"
 
 [dependency-groups]
 dev = [
-    "pre-commit (>=4.6.1,<5.0.0)",
-    "pytest (>=8.0.0,<9.0.0)",
-    "pytest-asyncio (>=0.24.0,<1.4.0)",
-    "poetry-dynamic-versioning (>=1.0.0,<2.0.0)",
-    "ruff (>=0.16.6,<0.17.0)",
+    "pre-commit>=4.6.1,<5.0.0",
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-asyncio>=0.24.0,<1.4.0",
+    "ruff>=0.16.6,<0.17.0",
 ]
 
-[tool.poetry]
-package-mode = true
-packages = [{ include = "demon_cry" }]
-include = ["modules/**/*"]
-version = "0.0.0"
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.poetry.requires-plugins]
-poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "pep440"
-pattern = "default-unprefixed"
+[tool.hatch.version]
+source = "vcs"
 
 [tool.ruff]
 line-length = 88
@@ -60,22 +47,8 @@ target-version = "py312"
 extend-exclude = ["alembic"]
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "F",   # pyflakes (неиспользуемые переменные и импорты)
-    "I",   # isort (сортировка импортов)
-    "UP",  # pyupgrade (современный синтаксис)
-    "B",   # flake8-bugbear (антипаттерны, изменяемые аргументы по умолчанию)
-    "SIM", # flake8-simplify (упрощение синтаксиса)
-    "RET", # flake8-return (оптимизация return)
-]
-ignore = [
-    "E501", # длину строки контролирует ruff-format
-]
+select = ["E", "F", "I", "UP", "B", "SIM", "RET"]
+ignore = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"
