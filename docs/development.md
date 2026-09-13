@@ -4,8 +4,7 @@
 
 ```bash
 git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
-pip install poetry
-poetry install
+uv sync --locked --group dev
 ```
 
 ## Pre-commit
@@ -15,8 +14,10 @@ poetry install
 Активация хуков (один раз после clone):
 
 ```bash
-poetry run pre-commit install
+uv run pre-commit install
 ```
+
+`pre-commit` уже в `[dependency-groups] dev`, отдельная установка не нужна.
 
 При каждом `git commit` автоматически запускаются проверки:
 
@@ -28,7 +29,7 @@ poetry run pre-commit install
 Запуск вручную:
 
 ```bash
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 ## Линтер и форматтер
@@ -38,9 +39,9 @@ poetry run pre-commit run --all-files
 Запуск:
 
 ```bash
-poetry run ruff check        # линтинг
-poetry run ruff check --fix  # автоисправление
-poetry run ruff format       # форматирование
+uv run ruff check        # линтинг
+uv run ruff check --fix  # автоисправление
+uv run ruff format       # форматирование
 ```
 
 Конфигурация в `pyproject.toml`:
@@ -117,14 +118,14 @@ demon_cry/
 my_module = "my_package.module:MyModule"
 ```
 
-5. Установить пакет: `pip install -e .`
+5. Установить пакет: `uv sync --locked --group dev` (editable-установка проекта происходит автоматически)
 
 Модуль автоматически обнаруживается при старте demon-cry и появляется в Admin API.
 
 ## Тесты
 
 ```bash
-poetry run pytest
+uv run pytest
 ```
 
 Тесты используют моки вместо реальных вызовов API. Подробнее: [docs/tests.md](tests.md).
