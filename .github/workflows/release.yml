@@ -48,8 +48,8 @@ jobs:
 
       - name: Install dependencies, test and build
         run: |
-          uv sync --group dev
-          uv run pytest
+          uv sync --locked --group dev
+          uv run --locked pytest
           uv build
 
       - name: Publish to PyPI
