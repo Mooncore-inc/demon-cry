@@ -5,7 +5,7 @@
 ## Запуск
 
 ```bash
-poetry run pytest tests/test_llm.py -v
+uv run pytest tests/test_llm.py -v
 ```
 
 ## Как работают моки

@@ -23,7 +23,7 @@
         devShells.default = pkgs.mkShell {
           packages = [
             demon-cry.pythonEnv
-            pkgs.poetry
+            pkgs.uv
             pkgs.jq
           ];
         };
