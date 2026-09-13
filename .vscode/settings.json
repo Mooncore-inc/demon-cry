@@ -1,0 +1,4 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:uv",
+    "python-envs.defaultPackageManager": "ms-python.python:uv"
+}
