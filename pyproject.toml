@@ -15,7 +15,7 @@ dependencies = [
     "fastapi",
     "openai",
     "httpx",
-    "pydantic",
+    "pydantic>=2.0",
     "uvicorn[standard]",
     "demon-cry-base (>=0.3.1,<0.4.0)",
     "sqlalchemy (>=2.0.52,<3.0.0)",
