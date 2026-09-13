@@ -8,7 +8,9 @@ Demon Cry — автономный OSINT-агент, использующий LL
 ## Быстрый старт
 
 ```bash
-pip install demon-cry
+uv tool install demon-cry
+# или: pipx install demon-cry
+# или: pip install demon-cry
 demon-cry migrate upgrade
 demon-cry user create admin --admin
 demon-cry
@@ -39,7 +41,7 @@ curl -X POST http://localhost:8000/api/investigate \
 
 ## Документация
 
-- [Установка](docs/installation.md) — pip, исходники, NixOS
+- [Установка](docs/installation.md) — uv, pip, исходники, NixOS
 - [Конфигурация](docs/configuration.md) — env vars, LLM-модели, настройки
 - [Управление пользователями](docs/user-management.md) — API keys, admin endpoints
 - [Разработка](docs/development.md) — архитектура, добавление модулей, тесты
