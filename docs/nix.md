@@ -5,7 +5,7 @@
 | Выход flake | Что это |
 |-------------|---------|
 | `packages.<system>.default` | Пакет `demon-cry` (обёртка над `uvicorn`) |
-| `devShells.<system>.default` | Окружение для разработки (Python с зависимостями, `poetry`, `jq`) |
+| `devShells.<system>.default` | Окружение для разработки (Python с зависимостями, `uv`, `jq`) |
 | `nixosModules.default` | Systemd-сервис `services.demon-cry` |
 
 Поддерживаются системы, которые даёт `flake-utils.lib.eachDefaultSystem` (linux/darwin, x86_64/aarch64). Сам NixOS-модуль, разумеется, только для NixOS.
@@ -155,7 +155,7 @@ demon-cry user create admin --admin
 demon-cry
 ```
 
-Dev-shell даёт Python 3.12 со всеми рантайм-зависимостями, `poetry` и `jq`.
+Dev-shell даёт Python 3.12 со всеми рантайм-зависимостями, `uv` и `jq`. Зависимости Python ставит `uv sync --locked`, системный `pythonEnv` нужен только для Nix-сборки.
 
 Локальная сборка рабочего дерева:
 
@@ -168,10 +168,10 @@ nix build .#default
 
 ## Как устроен пакет
 
-- Зависимости берутся из nixpkgs (`python312.withPackages`), не из `poetry.lock`. **При добавлении зависимости в `pyproject.toml` её нужно добавить и в `package.nix`** — иначе модуль просто не зарегистрируется: `ModuleRegistry.discover()` глушит ошибки импорта в лог.
+- Зависимости берутся из nixpkgs (`python312.withPackages`), не из `uv.lock`. **При добавлении зависимости в `pyproject.toml` её нужно добавить и в `package.nix` + обновить `uv.lock` через `uv lock`** — иначе модуль просто не зарегистрируется: `ModuleRegistry.discover()` глушит ошибки импорта в лог.
 - `postPatch` заменяет захардкоженные пути на переменные окружения:
   - `DEMON_CRY_LOG` — файл лога; если не задан, логи идут в stderr (в journal).
 - Бинарь `demon-cry` — это `makeWrapper`围绕 `uvicorn demon_cry.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.
-- Версия пакета берётся из git-тега через `poetry-dynamic-versioning` и отражается в `demon_cry/__main__.py` автоматически.
+- Версия пакета берётся из git-тега через `hatch-vcs` и отражается в `demon_cry/__main__.py` автоматически.
 
 > **Важно:** NixOS-модуль в текущей версии генерирует `config.json`, но приложение мигрировало на БД-backed настройки. При использовании NixOS-модуля настройки LLM-провайдера (base_url, model, api_key) необходимо задавать через Admin API после первого запуска.
