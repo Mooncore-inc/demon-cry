@@ -13,7 +13,7 @@ from typing import Any
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
-from demon_cry.core.module_registry import ModuleRegistry
+from demon_cry.core.plugin_registry import PluginRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +150,7 @@ class LLM:
         base_url: str,
         api_key: str,
         model: str,
-        registry: ModuleRegistry,
+        registry: PluginRegistry,
         system_prompt: str,
         iteration_limit: int,
     ):

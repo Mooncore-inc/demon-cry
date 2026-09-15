@@ -86,7 +86,7 @@ uv run pytest tests/test_llm.py -v
 
 ### `test_run_chain_registry_error`
 
-**Сценарий:** Registry вернул ошибку (`{"error": "Unknown module: test_tool"}`).
+**Сценарий:** Registry вернул ошибку (`{"error": "Unknown plugin: test_tool"}`).
 
 **Проверяет:**
 - LLM всё равно получает результат ошибки

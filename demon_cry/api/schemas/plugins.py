@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 
 
-class ModuleResponse(BaseModel):
+class PluginResponse(BaseModel):
     id: int
-    module_name: str
+    plugin_name: str
     config: dict
     enabled: bool
 
 
-class ModuleUpdate(BaseModel):
-    config: dict | None
-    enabled: bool | None
+class PluginUpdate(BaseModel):
+    config: dict | None = None
+    enabled: bool | None = None

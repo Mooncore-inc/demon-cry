@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 
-from demon_cry.core.module_registry import ModuleRegistry
+from demon_cry.core.plugin_registry import PluginRegistry
 
 
-def get_registry(request: Request) -> ModuleRegistry:
+def get_registry(request: Request) -> PluginRegistry:
     return request.app.state.registry
 
 
-AppRegistry = Annotated[ModuleRegistry, Depends(get_registry)]
+AppRegistry = Annotated[PluginRegistry, Depends(get_registry)]

@@ -242,7 +242,7 @@ async def test_run_chain_registry_error(llm, mock_registry):
             "function": {"name": "test_tool", "description": "desc", "parameters": {}},
         }
     ]
-    mock_registry.execute.return_value = {"error": "Unknown module: test_tool"}
+    mock_registry.execute.return_value = {"error": "Unknown plugin: test_tool"}
 
     tool_call = MockToolCall(id="call_1", name="test_tool", arguments={"query": "test"})
     first_msg = MockMessage(content=None, tool_calls=[tool_call])

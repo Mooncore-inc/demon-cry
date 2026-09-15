@@ -168,7 +168,7 @@ nix build .#default
 
 ## Как устроен пакет
 
-- Зависимости берутся из nixpkgs (`python312.withPackages`), не из `uv.lock`. **При добавлении зависимости в `pyproject.toml` её нужно добавить и в `package.nix` + обновить `uv.lock` через `uv lock`** — иначе модуль просто не зарегистрируется: `ModuleRegistry.discover()` глушит ошибки импорта в лог.
+- Зависимости берутся из nixpkgs (`python312.withPackages`), не из `uv.lock`. **При добавлении зависимости в `pyproject.toml` её нужно добавить и в `package.nix` + обновить `uv.lock` через `uv lock`** — иначе плагин просто не зарегистрируется: `PluginRegistry.discover()` глушит ошибки импорта в лог.
 - `postPatch` заменяет захардкоженные пути на переменные окружения:
   - `DEMON_CRY_LOG` — файл лога; если не задан, логи идут в stderr (в journal).
 - Бинарь `demon-cry` — это `makeWrapper`围绕 `uvicorn demon_cry.__main__:app`, поэтому ему можно передавать любые флаги uvicorn.

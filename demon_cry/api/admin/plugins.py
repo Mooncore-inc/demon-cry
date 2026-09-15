@@ -1,27 +1,27 @@
 from fastapi import APIRouter, HTTPException
 
-from demon_cry.api.dependencies import ModuleRepo
-from demon_cry.api.schemas.modules import ModuleResponse, ModuleUpdate
+from demon_cry.api.dependencies import PluginRepo
+from demon_cry.api.schemas.plugins import PluginResponse, PluginUpdate
 
-modules_router = APIRouter(prefix="/modules")
-
-
-@modules_router.get("/", response_model=list[ModuleResponse])
-async def get_all_modules(module_repo: ModuleRepo):
-    return await module_repo.get_all()
+plugins_router = APIRouter(prefix="/plugins")
 
 
-@modules_router.get("/{module_name}", response_model=ModuleResponse)
-async def get_module(module_name: str, module_repo: ModuleRepo):
-    module = await module_repo.get(module_name=module_name)
-    if not module:
-        raise HTTPException(status_code=404, detail="Module not found")
-    return module
+@plugins_router.get("/", response_model=list[PluginResponse])
+async def get_all_plugins(plugin_repo: PluginRepo):
+    return await plugin_repo.get_all()
 
 
-@modules_router.patch("/{module_name}", response_model=ModuleResponse)
-async def update_module(module_name: str, body: ModuleUpdate, module_repo: ModuleRepo):
-    module = await module_repo.get(module_name=module_name)
-    if not module:
-        raise HTTPException(status_code=404, detail="Module not found")
-    return await module_repo.update(module, **body.model_dump(exclude_unset=True))
+@plugins_router.get("/{plugin_name}", response_model=PluginResponse)
+async def get_plugin(plugin_name: str, plugin_repo: PluginRepo):
+    plugin = await plugin_repo.get(plugin_name=plugin_name)
+    if not plugin:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return plugin
+
+
+@plugins_router.patch("/{plugin_name}", response_model=PluginResponse)
+async def update_plugin(plugin_name: str, body: PluginUpdate, plugin_repo: PluginRepo):
+    plugin = await plugin_repo.get(plugin_name=plugin_name)
+    if not plugin:
+        raise HTTPException(status_code=404, detail="Plugin not found")
+    return await plugin_repo.update(plugin, **body.model_dump(exclude_unset=True))

@@ -169,7 +169,7 @@ requires-dist = [
     { name = "aiosqlite", specifier = ">=0.19,<0.21" },
     { name = "alembic", specifier = ">=1.13,<2.0" },
     { name = "asyncpg", marker = "extra == 'postgres'" },
-    { name = "demon-cry-base", specifier = ">=0.3.1,<0.4.0" },
+    { name = "demon-cry-base", specifier = "==0.4.0" },
     { name = "fastapi" },
     { name = "httpx" },
     { name = "openai" },
@@ -190,11 +190,14 @@ dev = [
 
 [[package]]
 name = "demon-cry-base"
-version = "0.3.1"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/3b/ec/7e2c74ae111542ded0b96c0099b322a773948192517efc8714bf8a206116/demon_cry_base-0.3.1.tar.gz", hash = "sha256:5368dcfe18ff0f5b9501f9de154296136bf3fec010814ca7ac22d70819dd32af", size = 3426, upload-time = "2026-09-10T09:37:48.42Z" }
+dependencies = [
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ae/0c/ed2f6cd73f4a42f38f4bf41e89464bb2e7db74a1674f7fa01b94184b9078/demon_cry_base-0.4.0.tar.gz", hash = "sha256:150e3acdca1e85b9b80eac0d76a94c783d0c5c80d54e773253d4f3121cd9c2ca", size = 4466, upload-time = "2026-09-15T19:55:02.126Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/9f/ee3245a46a88d9325ef2707f11c46118baa1d24c83e85f98d29ca25afc87/demon_cry_base-0.3.1-py3-none-any.whl", hash = "sha256:6b8c6dd061871177839b0201caa4f5fb050716c303fa16c3549218a5deba3a95", size = 4180, upload-time = "2026-09-10T09:37:47.244Z" },
+    { url = "https://files.pythonhosted.org/packages/37/f0/9b5a0240b9c54405bd523a1d37e0ecc93a0e5d6bcde396a22be687ca229d/demon_cry_base-0.4.0-py3-none-any.whl", hash = "sha256:b03c119fac43e927ecd6a520a90d70262a859e2418c5f41f9113f11a641ff1ea", size = 4838, upload-time = "2026-09-15T19:55:01.023Z" },
 ]
 
 [[package]]
