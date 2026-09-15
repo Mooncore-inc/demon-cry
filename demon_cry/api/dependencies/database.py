@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from demon_cry.database.engine import get_session
 from demon_cry.database.repositories import (
     LLMRepository,
-    ModuleRepository,
+    PluginRepository,
     SettingsRepository,
     UserRepository,
 )
@@ -21,11 +21,11 @@ def get_settings_repo(session: Session) -> SettingsRepository:
 SettingsRepo = Annotated[SettingsRepository, Depends(get_settings_repo)]
 
 
-def get_module_repo(session: Session) -> ModuleRepository:
-    return ModuleRepository(session)
+def get_plugin_repo(session: Session) -> PluginRepository:
+    return PluginRepository(session)
 
 
-ModuleRepo = Annotated[ModuleRepository, Depends(get_module_repo)]
+PluginRepo = Annotated[PluginRepository, Depends(get_plugin_repo)]
 
 
 def get_user_repo(session: Session) -> UserRepository:

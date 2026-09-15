@@ -40,7 +40,7 @@ curl http://localhost:8000/api/investigate \
 
 | Роль | Доступ |
 |------|--------|
-| Admin | Полный доступ: user CRUD, настройки, модули, LLM-модели |
+| Admin | Полный доступ: user CRUD, настройки, плагины, LLM-модели |
 | User | Только investigation и health check |
 
 ## Admin API
@@ -74,10 +74,10 @@ curl http://localhost:8000/api/investigate \
 | `/api/admin/llm-models/{id}` | PATCH | Обновить модель |
 | `/api/admin/llm-models/{id}` | DELETE | Удалить модель |
 
-### Модули
+### Плагины
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/admin/modules/` | GET | Список модулей |
-| `/api/admin/modules/{id}` | GET | Получить модуль |
-| `/api/admin/modules/{id}` | PATCH | Настроить модуль |
+| `/api/admin/plugins/` | GET | Список плагинов |
+| `/api/admin/plugins/{plugin_name}` | GET | Получить плагин |
+| `/api/admin/plugins/{plugin_name}` | PATCH | Настроить плагин |

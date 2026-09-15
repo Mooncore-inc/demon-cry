@@ -76,17 +76,17 @@ demon_cry/
   cli.py               — CLI entry point (argparse)
   core/
     config.py          — App config (pydantic-settings, DC_* env vars)
-    module_registry.py — OSINT module discovery via entry points
+    plugin_registry.py — OSINT plugin discovery via entry points
   api/
     investigate.py     — Main investigation endpoint
     health.py          — Health check
     tools.py           — Tool listing
-    admin/             — Admin CRUD (users, settings, modules, llm_models)
+    admin/             — Admin CRUD (users, settings, plugins, llm_models)
     dependencies/      — FastAPI DI (auth, database)
     schemas/           — Pydantic request/response schemas
   database/
     engine.py          — SQLAlchemy async engine/session
-    models/            — ORM models (users, settings, modules, llm_models)
+    models/            — ORM models (users, settings, plugins, llm_models)
     repositories/      — Repository pattern (data access)
   services/
     llm.py             — LLM interaction (chain loop, tool calling)
@@ -96,31 +96,31 @@ demon_cry/
 
 ### Слой за слоем
 
-1. **core** — конфигурация и реестр модулей (ничего не знает об HTTP)
+1. **core** — конфигурация и реестр плагинов (ничего не знает об HTTP)
 2. **database** — ORM модели и репозитории (ничего не знает о API)
 3. **services** — бизнес-логика (LLM взаимодействие)
 4. **api** — HTTP маршруты, schemas, DI (зависит от всех предыдущих)
 5. **cli** — точка входа, парсинг аргументов
 
-## Добавление модуля
+## Добавление плагина
 
-Модули — это отдельные pip-пакеты с entry points. Контракт описан в [demon-cry-base](https://github.com/Mooncore-inc/demon-cry-base).
+Плагины — это отдельные pip-пакеты с entry points. Контракт описан в [demon-cry-base](https://github.com/Mooncore-inc/demon-cry-base).
 
 Кратко:
 
 1. Установить `demon-cry-base`
-2. Создать класс, наследующий `BaseModule`
+2. Создать класс, наследующий `BasePlugin`
 3. Определить `config_model`, `parameters_model`, `execute()`
 4. Зарегистрировать entry point в `pyproject.toml`:
 
 ```toml
-[project.entry-points."demon_cry.modules"]
-my_module = "my_package.module:MyModule"
+[project.entry-points."demon_cry.plugins"]
+my_plugin = "my_package.my_plugin:MyPlugin"
 ```
 
 5. Установить пакет: `uv sync --locked --group dev` (editable-установка проекта происходит автоматически)
 
-Модуль автоматически обнаруживается при старте demon-cry и появляется в Admin API.
+Плагин автоматически обнаруживается при старте demon-cry и появляется в Admin API.
 
 ## Тесты
 

@@ -2,10 +2,10 @@ import logging
 from importlib.metadata import entry_points
 from typing import Any, TypedDict
 
-from demon_cry_base import BaseModule
+from demon_cry_base import BasePlugin
 
 from demon_cry.database.engine import async_session_factory
-from demon_cry.database.repositories import ModuleRepository
+from demon_cry.database.repositories import PluginRepository
 
 
 class ToolFunction(TypedDict):
@@ -22,62 +22,62 @@ class ToolDefinition(TypedDict):
 logger = logging.getLogger(__name__)
 
 
-class ModuleRegistry:
+class PluginRegistry:
     def __init__(self):
-        self.modules: dict[str, BaseModule] = {}
+        self.plugins: dict[str, BasePlugin] = {}
         self.session_factory = async_session_factory
 
     async def discover(self):
-        eps = entry_points(group="demon_cry.modules")
+        eps = entry_points(group="demon_cry.plugins")
         async with self.session_factory() as session:
-            repo = ModuleRepository(session=session)
+            repo = PluginRepository(session=session)
             for ep in eps:
                 try:
-                    module_class = ep.load()
-                    instance = module_class()
-                    self.modules[instance.name] = instance
-                    logger.info("Registered module: %s", instance.name)
-                    existing = await repo.get(module_name=instance.name)
+                    plugin_class = ep.load()
+                    instance = plugin_class()
+                    self.plugins[instance.name] = instance
+                    logger.info("Registered plugin: %s", instance.name)
+                    existing = await repo.get(plugin_name=instance.name)
                     if not existing:
                         defaults = instance.config_model().model_dump()
                         await repo.create(
-                            module_name=instance.name, config=defaults, enabled=False
+                            plugin_name=instance.name, config=defaults, enabled=False
                         )
                 except Exception:
-                    logger.exception("Failed to load module: %s", ep.name)
+                    logger.exception("Failed to load plugin: %s", ep.name)
 
     async def get_tools_schema(self) -> list[ToolDefinition]:
         tools: list[ToolDefinition] = []
-        for module in self.modules.values():
+        for plugin in self.plugins.values():
             tools.append(
                 {
                     "type": "function",
                     "function": {
-                        "name": module.name,
-                        "description": f"[Category: {module.category}] {module.description}",
-                        "parameters": module.parameters_model.model_json_schema(),
+                        "name": plugin.name,
+                        "description": f"[Category: {plugin.category}] {plugin.description}",
+                        "parameters": plugin.parameters_model.model_json_schema(),
                     },
                 }
             )
         return tools
 
     async def execute(self, tool_name: str, **kwargs) -> dict:
-        if tool_name not in self.modules:
-            return {"error": f"Unknown module: {tool_name}"}
+        if tool_name not in self.plugins:
+            return {"error": f"Unknown plugin: {tool_name}"}
         try:
-            module = self.modules[tool_name]
+            plugin = self.plugins[tool_name]
             config_data = await self._load_config(tool_name)
-            config = module.config_model(**config_data)
-            params = module.parameters_model(**kwargs)
-            return await module.execute(config=config, params=params)
+            config = plugin.config_model(**config_data)
+            params = plugin.parameters_model(**kwargs)
+            return await plugin.execute(config=config, params=params)
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}
 
-    async def _load_config(self, module_name: str) -> dict:
+    async def _load_config(self, plugin_name: str) -> dict:
         async with self.session_factory() as session:
-            repo = ModuleRepository(session=session)
-            record = await repo.get(module_name=module_name)
+            repo = PluginRepository(session=session)
+            record = await repo.get(plugin_name=plugin_name)
             if record and record.enabled:
                 return record.config
         return {}
