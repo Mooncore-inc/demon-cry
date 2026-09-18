@@ -147,6 +147,7 @@ dependencies = [
     { name = "openai" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "scalar-fastapi" },
     { name = "sqlalchemy" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -175,6 +176,7 @@ requires-dist = [
     { name = "openai" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pydantic-settings", specifier = ">=2.15.0,<3.0.0" },
+    { name = "scalar-fastapi", specifier = ">=1.9.0" },
     { name = "sqlalchemy", specifier = ">=2.0.52,<3.0.0" },
     { name = "uvicorn", extras = ["standard"] },
 ]
@@ -856,6 +858,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5f/ea/7f9b938a63ece4bec677ad7f9f7fa02df3383db1949ed93a382441c09a87/ruff-0.16.7-py3-none-win32.whl", hash = "sha256:2ea3470fcebcbc5df2fb0c6f3b90333fa9084c534e0111c038fa4a6ab9f1c4b7", size = 10059082, upload-time = "2026-09-10T18:03:59.632Z" },
     { url = "https://files.pythonhosted.org/packages/39/11/480a6973a927aa653e1cead6a6416008640e03a99d05b34c0434b8c6c366/ruff-0.16.7-py3-none-win_amd64.whl", hash = "sha256:7ac26aca826e9e21d0f1cb25b54ac660760a9fdd094d3e4df9848232be98cfc6", size = 10593368, upload-time = "2026-09-10T18:04:01.999Z" },
     { url = "https://files.pythonhosted.org/packages/8b/4b/51327018d056f0dad2c2238f26d1fb0f53707a9d91b75dea6d1b3039f136/ruff-0.16.7-py3-none-win_arm64.whl", hash = "sha256:aab7f39e2c9df6c596216070f98eef1207b94f8516cca20c808826974971855b", size = 10412401, upload-time = "2026-09-10T18:04:04.098Z" },
+]
+
+[[package]]
+name = "scalar-fastapi"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "pydantic" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/44/5140a89b49b5949cd5d09be73c2c78ae9a83e6ae0990444c92f29ffa5bf0/scalar_fastapi-1.9.0.tar.gz", hash = "sha256:f9d01cd97a3e01188df61cc41c4525cf733ee67feb6e5bc0a65cd197e5062633", size = 10776, upload-time = "2026-08-28T11:33:22.787Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f3/24/cf263f24cd34b720c8e2567fca69036be13113b1e9e8a218104d1481316c/scalar_fastapi-1.9.0-py3-none-any.whl", hash = "sha256:7aa67d9d4b3bde7e5eab86a8d16637ab743f3259090bb6bee6a33cf4293f1293", size = 8536, upload-time = "2026-08-28T11:33:21.75Z" },
 ]
 
 [[package]]
