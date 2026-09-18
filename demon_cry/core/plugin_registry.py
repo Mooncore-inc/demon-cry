@@ -3,7 +3,8 @@ from importlib.metadata import entry_points
 from pkgutil import resolve_name
 from typing import Any, TypedDict
 
-from demon_cry_base import BasePlugin
+from demon_cry_base.plugin import BasePlugin
+from pydantic import BaseModel
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import PluginRepository
@@ -73,7 +74,10 @@ class PluginRegistry:
 
             runner_func = resolve_name(plugin.execute_func)
 
-            return await runner_func(config=config, params=params)
+            result = await runner_func(config=config, params=params)
+            if isinstance(result, BaseModel):
+                return result.model_dump(mode="json")
+            return result
 
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
