@@ -9,6 +9,7 @@ dynamic = ["version"]
 
 dependencies = [
     "fastapi",
+    "scalar-fastapi>=1.9.0",
     "openai",
     "httpx",
     "uvicorn[standard]",
