@@ -2,8 +2,11 @@
 
 Demon Cry — автономный OSINT-агент, использующий LLM для расследований в открытых источниках. Агент строит гипотезы, выбирает инструменты и анализирует данные.
 
-[![License: MPL2](https://img.shields.io/badge/License-MPL2-red.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-red.svg)](https://www.python.org/downloads/)
+[![License: MPL2](https://img.shields.io/badge/License-MPL2-green.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-green.svg)](https://www.python.org/downloads/)
+[![Pypi](https://img.shields.io/pypi/v/demon-cry?label=pypi%20package&color=green)](https://pypi.org/project/demon-cry/)
+[![Release](https://img.shields.io/github/actions/workflow/status/Mooncore-inc/demon-cry/release.yml?label=Release)](https://github.com/Mooncore-inc/demon-cry/actions/workflows/release.yml)
+
 
 ## Быстрый старт
 
