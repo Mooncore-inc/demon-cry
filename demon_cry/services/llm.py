@@ -123,7 +123,12 @@ class ToolUsage(BaseModel):
 
     def add_from_tool_call(self, tc, result) -> ToolCall:
         args = json.loads(tc.function.arguments)
-        is_error = isinstance(result, dict) and "error" in result
+        if isinstance(result, BaseModel):
+            result = result.model_dump(mode="json")
+        is_error = isinstance(result, dict) and (
+            "error" in result
+            or ("status" in result and result.get("status") not in ("success", "ok"))
+        )
         call = ToolCall(
             name=tc.function.name,
             arguments=args,
@@ -222,6 +227,8 @@ class LLM:
             args = json.loads(tool_call.function.arguments)
 
             result = await self.registry.execute(name, **args)
+            if isinstance(result, BaseModel):
+                result = result.model_dump(mode="json")
 
             tools_used.add_from_tool_call(tool_call, result)
 

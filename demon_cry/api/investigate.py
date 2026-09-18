@@ -86,3 +86,13 @@ async def investigate(
     except Exception as e:
         logger.error("Investigation failed: %s", e)
         return OSINTResponse(status="error", result="ошибка")
+
+
+@router.post("/investigate/{tool_name}/execute")
+async def tool_execute(
+    req: dict,
+    tool_name: str,
+    registry: AppRegistry,
+    user: CurrentUser,
+):
+    return await registry.execute(tool_name=tool_name, **req)

@@ -1,8 +1,10 @@
 import logging
 from importlib.metadata import entry_points
+from pkgutil import resolve_name
 from typing import Any, TypedDict
 
-from demon_cry_base import BasePlugin
+from demon_cry_base.plugin import BasePlugin
+from pydantic import BaseModel
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import PluginRepository
@@ -69,7 +71,14 @@ class PluginRegistry:
             config_data = await self._load_config(tool_name)
             config = plugin.config_model(**config_data)
             params = plugin.parameters_model(**kwargs)
-            return await plugin.execute(config=config, params=params)
+
+            runner_func = resolve_name(plugin.execute_func)
+
+            result = await runner_func(config=config, params=params)
+            if isinstance(result, BaseModel):
+                return result.model_dump(mode="json")
+            return result
+
         except Exception as e:
             logger.exception("Error during execution of %s", tool_name)
             return {"error": str(e)}
