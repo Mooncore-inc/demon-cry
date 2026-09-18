@@ -18,7 +18,11 @@ demon-cry user create admin --admin
 demon-cry
 ```
 
-Swagger: http://localhost:8000/docs
+| Название | Ссылка |
+| :---- | :---- |
+|Swagger | http://localhost:8000/docs |
+|Scalar | http://localhost:8000/scalar |
+| redoc | http://localhost:8000/redoc |
 
 ## CLI
 
