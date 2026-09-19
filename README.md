@@ -39,7 +39,7 @@ demon-cry
 ## Использование
 
 ```bash
-curl -X POST http://localhost:8000/api/investigate \
+curl -X POST http://localhost:8000/api/v1/investigate \
   -H "Authorization: Bearer <api_key>" \
   -H "Content-Type: application/json" \
   -d '{"target": "example.com"}'
