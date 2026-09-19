@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -96,3 +97,27 @@ async def tool_execute(
     user: CurrentUser,
 ):
     return await registry.execute(tool_name=tool_name, **req)
+
+
+class ToolFunction(BaseModel):
+    name: str
+    description: str
+    parameters: dict[str, Any]
+
+
+class ToolDefinition(BaseModel):
+    type: str
+    function: ToolFunction
+
+
+class ToolsResponse(BaseModel):
+    tools: list[ToolDefinition]
+
+
+@router.get(path="/investigate/tools")
+async def tools(
+    registry: AppRegistry,
+    user: CurrentUser,
+):
+    tools = await registry.get_tools_schema()
+    return ToolsResponse(tools=tools)
