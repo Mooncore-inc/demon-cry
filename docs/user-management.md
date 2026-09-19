@@ -17,7 +17,7 @@ CLI выведет API key — **сохраните его, повторный �
 ### Через Admin API
 
 ```bash
-curl -X POST http://localhost:8000/api/admin/users \
+curl -X POST http://localhost:8000/api/v1/admin/users \
   -H "Authorization: Bearer <admin_key>" \
   -H "Content-Type: application/json" \
   -d '{"username": "charlie"}'
@@ -30,18 +30,26 @@ curl -X POST http://localhost:8000/api/admin/users \
 Все запросы к API требуют Bearer-токен (API key пользователя):
 
 ```bash
-curl http://localhost:8000/api/investigate \
+curl -X POST http://localhost:8000/api/v1/investigate \
   -H "Authorization: Bearer <api_key>" \
   -H "Content-Type: application/json" \
   -d '{"target": "example.com"}'
 ```
+
+### Investigation endpoints
+
+| Endpoint | Метод | Описание |
+|----------|-------|----------|
+| `/api/v1/investigate` | POST | Запустить OSINT-расследование |
+| `/api/v1/investigate/tools` | GET | Список доступных инструментов (OpenAI-compatible schema) |
+| `/api/v1/investigate/{tool_name}/execute` | POST | Выполнить инструмент напрямую |
 
 ## Роли
 
 | Роль | Доступ |
 |------|--------|
 | Admin | Полный доступ: user CRUD, настройки, плагины, LLM-модели |
-| User | Только investigation и health check |
+| User | Только investigation endpoints (`POST /api/v1/investigate`, `GET /api/v1/investigate/tools`, `POST /api/v1/investigate/{tool_name}/execute`) |
 
 ## Admin API
 
@@ -51,33 +59,33 @@ curl http://localhost:8000/api/investigate \
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/admin/users/` | POST | Создать пользователя |
-| `/api/admin/users/{id}` | GET | Получить пользователя |
-| `/api/admin/users/{id}` | PATCH | Обновить пользователя |
-| `/api/admin/users/{id}` | DELETE | Удалить пользователя |
+| `/api/v1/admin/users/` | POST | Создать пользователя |
+| `/api/v1/admin/users/{id}` | GET | Получить пользователя |
+| `/api/v1/admin/users/{id}` | PATCH | Обновить пользователя |
+| `/api/v1/admin/users/{id}` | DELETE | Удалить пользователя |
 
 ### Настройки
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/admin/settings/` | GET | Все настройки |
-| `/api/admin/settings/{key}` | GET | Получить настройку |
-| `/api/admin/settings/{key}` | PATCH | Обновить настройку |
+| `/api/v1/admin/settings/` | GET | Все настройки |
+| `/api/v1/admin/settings/{key}` | GET | Получить настройку |
+| `/api/v1/admin/settings/{key}` | PATCH | Обновить настройку |
 
 ### LLM-модели
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/admin/llm-models/` | GET | Список моделей |
-| `/api/admin/llm-models/` | POST | Добавить модель |
-| `/api/admin/llm-models/{id}` | GET | Получить модель |
-| `/api/admin/llm-models/{id}` | PATCH | Обновить модель |
-| `/api/admin/llm-models/{id}` | DELETE | Удалить модель |
+| `/api/v1/admin/llm-models/` | GET | Список моделей |
+| `/api/v1/admin/llm-models/` | POST | Добавить модель |
+| `/api/v1/admin/llm-models/{id}` | GET | Получить модель |
+| `/api/v1/admin/llm-models/{id}` | PATCH | Обновить модель |
+| `/api/v1/admin/llm-models/{id}` | DELETE | Удалить модель |
 
 ### Плагины
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/admin/plugins/` | GET | Список плагинов |
-| `/api/admin/plugins/{plugin_name}` | GET | Получить плагин |
-| `/api/admin/plugins/{plugin_name}` | PATCH | Настроить плагин |
+| `/api/v1/admin/plugins/` | GET | Список плагинов |
+| `/api/v1/admin/plugins/{plugin_name}` | GET | Получить плагин |
+| `/api/v1/admin/plugins/{plugin_name}` | PATCH | Настроить плагин |

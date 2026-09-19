@@ -24,7 +24,7 @@ LLM-провайдеры хранятся в БД и управляются че
 ### Добавление модели
 
 ```bash
-curl -X POST http://localhost:8000/api/admin/llm-models \
+curl -X POST http://localhost:8000/api/v1/admin/llm-models \
   -H "Authorization: Bearer <api_key>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -38,7 +38,7 @@ curl -X POST http://localhost:8000/api/admin/llm-models \
 ### Просмотр моделей
 
 ```bash
-curl http://localhost:8000/api/admin/llm-models \
+curl http://localhost:8000/api/v1/admin/llm-models \
   -H "Authorization: Bearer <api_key>"
 ```
 
@@ -65,14 +65,14 @@ curl http://localhost:8000/api/admin/llm-models \
 ### Просмотр настройки
 
 ```bash
-curl http://localhost:8000/api/admin/settings \
+curl http://localhost:8000/api/v1/admin/settings \
   -H "Authorization: Bearer <api_key>"
 ```
 
 ### Изменение настройки
 
 ```bash
-curl -X PATCH http://localhost:8000/api/admin/settings/iteration_limit \
+curl -X PATCH http://localhost:8000/api/v1/admin/settings/iteration_limit \
   -H "Authorization: Bearer <api_key>" \
   -H "Content-Type: application/json" \
   -d '{"value": "200"}'

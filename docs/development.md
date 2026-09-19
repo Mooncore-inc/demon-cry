@@ -78,10 +78,9 @@ demon_cry/
     config.py          — App config (pydantic-settings, DC_* env vars)
     plugin_registry.py — OSINT plugin discovery via entry points
   api/
-    investigate.py     — Main investigation endpoint
-    health.py          — Health check
-    tools.py           — Tool listing
-    admin/             — Admin CRUD (users, settings, plugins, llm_models)
+    __init__.py          — корневой роутер с префиксом `/api/v1`
+    investigate.py     — investigation endpoints (`POST /investigate`, `GET /investigate/tools`, `POST /investigate/{tool_name}/execute`)
+    admin/             — Admin CRUD (users, settings, plugins, llm_models), монтируется под `/api/v1/admin`
     dependencies/      — FastAPI DI (auth, database)
     schemas/           — Pydantic request/response schemas
   database/

@@ -141,7 +141,7 @@ services.demon-cry.settings.searxng_url = "https://searx.example.org";
 systemctl status demon-cry
 journalctl -u demon-cry -f
 
-curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:8000/docs
 ```
 
 ## Разработка
