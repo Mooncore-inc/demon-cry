@@ -10,12 +10,31 @@ Demon Cry использует комбинацию переменных окр�
 | `DC_HOST` | Адрес API-сервера | `127.0.0.1` |
 | `DC_PORT` | Порт API-сервера | `8000` |
 | `DC_LOG_FILE` | Путь к файлу лога (stderr если не задано) | — |
+| `DC_CORS_ORIGINS` | Список разрешённых origins для браузерного доступа (JSON-массив) | `http://localhost:3000`, `http://localhost:5173`, `http://127.0.0.1:3000`, `http://127.0.0.1:5173` |
 
 Пример:
 
 ```bash
 DC_HOST=0.0.0.0 DC_PORT=9000 demon-cry
 ```
+
+## CORS
+
+Браузерный доступ к API ограничен через `CORSMiddleware` (`demon_cry/__main__.py`). Настройки фиксированы: `allow_methods=["*"]`, `allow_headers=["*"]`, `allow_credentials=False`. Настраивается только список origins через `DC_CORS_ORIGINS`.
+
+Формат — JSON-массив (pydantic-settings `list[str]`):
+
+```bash
+# Фронт на конкретном домене
+DC_CORS_ORIGINS='["https://app.example.com"]' demon-cry
+
+# Локальная разработка, любой origin
+DC_CORS_ORIGINS='["*"]' demon-cry
+```
+
+Дефолта хватает для локального фронта на `localhost:3000/5173` (Vite/Next).
+
+> `["*"]` на публично доступном порту позволит любому сайту слать запросы к API. Сами ключи при этом всё равно проверяются через Bearer-токен, но без необходимости не открывайте.
 
 ## LLM-модели
 

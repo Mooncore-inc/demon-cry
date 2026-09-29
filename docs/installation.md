@@ -17,6 +17,14 @@ pip install "demon-cry[postgres]"
 DC_DB_URL="postgresql+asyncpg://user:pass@localhost/demoncry" demon-cry
 ```
 
+Если фронт находится на отдельном домене, укажите его в CORS:
+
+```bash
+DC_CORS_ORIGINS='["https://app.example.com"]' demon-cry
+```
+
+Подробности: [Конфигурация](configuration.md#cors).
+
 ## Из исходников (разработка)
 
 ```bash
