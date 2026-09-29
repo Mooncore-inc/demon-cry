@@ -66,6 +66,14 @@ demon-cry user create admin --admin
 demon-cry
 ```
 
+Дефолтных CORS-origins (`localhost:3000/5173`, `127.0.0.1:3000/5173`) хватает для локального фронта. Если фронт на другом порту/домене:
+
+```bash
+DC_CORS_ORIGINS='["*"]' demon-cry
+```
+
+Подробности: [Конфигурация](configuration.md#cors).
+
 Swagger доступен по `http://localhost:8000/docs`.
 
 ## Архитектура
