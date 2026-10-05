@@ -4,27 +4,17 @@
 
 ```bash
 git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
-uv sync --locked --group dev
+make setup
 ```
 
 ## Pre-commit
 
 Проект использует [pre-commit](https://pre-commit.com/) для автоматической проверки кода перед коммитом.
+Хуки: ruff (линтинг и форматирование), ty (проверка типов), typos (орфография) и базовые проверки файлов.
 
 Активация хуков (один раз после clone):
 
-```bash
-uv run pre-commit install
-```
-
 `pre-commit` уже в `[dependency-groups] dev`, отдельная установка не нужна.
-
-При каждом `git commit` автоматически запускаются проверки:
-
-- trailing whitespace, end-of-file, смешанные окончания строк
-- отсутствие debug-остатков (`breakpoint`, `print` в production-коде)
-- проверка yaml/toml/json на валидность
-- поиск приватных ключей и секретов
 
 Запуск вручную:
 
@@ -39,9 +29,10 @@ uv run pre-commit run --all-files
 Запуск:
 
 ```bash
-uv run ruff check        # линтинг
-uv run ruff check --fix  # автоисправление
-uv run ruff format       # форматирование
+make lint        # все линтеры: ruff + ty + typos
+make lint-ruff   # только ruff
+make lint-fix    # автоисправление ruff
+make format      # форматирование
 ```
 
 Конфигурация в `pyproject.toml`:
@@ -53,6 +44,32 @@ uv run ruff format       # форматирование
 - `SIM` — flake8-simplify (упрощение синтаксиса)
 - `RET` — flake8-return (оптимизация return)
 
+## Проверка типов
+
+Проект использует [ty](https://github.com/astral-sh/ty) для проверки типов.
+
+Запуск:
+
+```bash
+make lint-ty  # эквивалент: uv run ty check
+```
+
+`make lint` запускает все линтеры сразу (ruff + ty + typos).
+
+Конфигурация в `pyproject.toml` (`[tool.ty.src]`, исключены `tests/`, `alembic/`).
+
+## Проверка орфографии
+
+Проект использует [typos](https://github.com/crate-ci/typos) для поиска опечаток в коде и документации.
+
+Запуск:
+
+```bash
+make lint-typos  # эквивалент: uv run typos
+```
+
+Конфигурация в `pyproject.toml` (`[tool.typos.files]`, исключён `alembic/`).
+
 ## Запуск локально
 
 ```bash
@@ -61,9 +78,6 @@ demon-cry migrate upgrade
 
 # Создание пользователя
 demon-cry user create admin --admin
-
-# Запуск сервера
-demon-cry
 ```
 
 Дефолтных CORS-origins (`localhost:3000/5173`, `127.0.0.1:3000/5173`) хватает для локального фронта. Если фронт на другом порту/домене:
@@ -125,14 +139,14 @@ demon_cry/
 my_plugin = "my_package.my_plugin:MyPlugin"
 ```
 
-5. Установить пакет: `uv sync --locked --group dev` (editable-установка проекта происходит автоматически)
+5. Установить пакет: `uv pip install -e /путь/к/плагину` (editable-установка проекта происходит автоматически)
 
 Плагин автоматически обнаруживается при старте demon-cry и появляется в Admin API.
 
 ## Тесты
 
 ```bash
-uv run pytest
+make test
 ```
 
 Тесты используют моки вместо реальных вызовов API. Подробнее: [docs/tests.md](tests.md).

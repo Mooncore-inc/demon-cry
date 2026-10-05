@@ -8,9 +8,14 @@ using an OpenAI-compatible API.
 import asyncio
 import json
 import logging
-from typing import Any
+from typing import Any, cast
 
 from openai import AsyncOpenAI
+from openai.types.chat import (
+    ChatCompletionMessageParam,
+    ChatCompletionToolChoiceOptionParam,
+    ChatCompletionToolUnionParam,
+)
 from pydantic import BaseModel
 
 from demon_cry.core.plugin_registry import PluginRegistry
@@ -169,7 +174,7 @@ class LLM:
         self, user_query: str
     ) -> tuple[str | None, ToolUsage, TokenUsage]:
         """Оркестратор: управляет циклом взаимодействия с LLM."""
-        messages = [
+        messages: list[Any] = [
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_query},
         ]
@@ -178,7 +183,9 @@ class LLM:
         tokens = TokenUsage()
 
         for i in range(self.iteration_limit):
-            tool_choice = "none" if i == self.iteration_limit - 1 else "auto"
+            tool_choice: ChatCompletionToolChoiceOptionParam = (
+                "none" if i == self.iteration_limit - 1 else "auto"
+            )
 
             response_message, usage = await self._call_llm(
                 messages=messages, tools_list=tools_list, tool_choice=tool_choice
@@ -198,17 +205,17 @@ class LLM:
 
     async def _call_llm(
         self,
-        messages: list[dict],
-        tools_list: list[dict],
-        tool_choice: str,
+        messages: list[Any],
+        tools_list: list[Any],
+        tool_choice: ChatCompletionToolChoiceOptionParam,
         temperature: float = 0.3,
     ) -> tuple[Any, Any]:
         """Выполняет запрос к модели."""
         completion = await self.client.chat.completions.create(
             model=self.model,
-            messages=messages,
+            messages=cast("list[ChatCompletionMessageParam]", messages),
             temperature=temperature,
-            tools=tools_list,
+            tools=cast("list[ChatCompletionToolUnionParam]", tools_list),
             tool_choice=tool_choice,
         )
 
@@ -216,7 +223,7 @@ class LLM:
         return completion.choices[0].message, completion.usage
 
     async def _process_tool_calls(
-        self, tool_calls: list, messages: list[dict], tools_used: ToolUsage
+        self, tool_calls: list, messages: list[Any], tools_used: ToolUsage
     ):
         """Обрабатывает вызовы инструментов и добавляет результаты в историю."""
 

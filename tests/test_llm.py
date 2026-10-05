@@ -38,7 +38,7 @@ class MockFunction:
 @dataclass
 class MockToolCall:
     id: str = "call_123"
-    function: MockFunction = None
+    function: MockFunction | None = None
 
     def __init__(self, id: str, name: str, arguments: dict):
         self.id = id
@@ -53,13 +53,13 @@ class MockMessage:
 
 @dataclass
 class MockChoice:
-    message: MockMessage = None
+    message: MockMessage | None = None
 
 
 @dataclass
 class MockResponse:
-    choices: list[MockChoice] = None
-    usage: MockUsage = None
+    choices: list[MockChoice] | None = None
+    usage: MockUsage | None = None
 
 
 # --- Fixtures ---
