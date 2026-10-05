@@ -4,7 +4,7 @@ from pkgutil import resolve_name
 from typing import Any
 
 from demon_cry_base.plugin import BasePlugin
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import PluginRepository
@@ -66,6 +66,7 @@ class PluginRegistry:
     async def execute(self, tool_name: str, **kwargs) -> dict:
         if tool_name not in self.plugins:
             return {"error": f"Unknown plugin: {tool_name}"}
+
         try:
             plugin = self.plugins[tool_name]
             config_data = await self._load_config(tool_name)
@@ -73,15 +74,17 @@ class PluginRegistry:
             params = plugin.parameters_model(**kwargs)
 
             runner_func = resolve_name(plugin.execute_func)
-
             result = await runner_func(config=config, params=params)
-            if isinstance(result, BaseModel):
-                return result.model_dump(mode="json")
-            return result
+
+            return result.model_dump(mode="json")
+
+        except ValidationError as e:
+            logger.warning("Validation error for %s: %s", tool_name, e)
+            return {"error": "Validation error", "details": e.errors()}
 
         except Exception as e:
-            logger.exception("Error during execution of %s", tool_name)
-            return {"error": str(e)}
+            logger.exception("Internal error during execution of %s: %s", tool_name, e)
+            return {"error": "Internal execution error"}
 
     async def _load_config(self, plugin_name: str) -> dict:
         async with self.session_factory() as session:
