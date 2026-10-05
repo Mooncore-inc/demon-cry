@@ -10,6 +10,7 @@ make setup
 ## Pre-commit
 
 Проект использует [pre-commit](https://pre-commit.com/) для автоматической проверки кода перед коммитом.
+Хуки: ruff (линтинг и форматирование), ty (проверка типов), typos (орфография) и базовые проверки файлов.
 
 Активация хуков (один раз после clone):
 
@@ -28,9 +29,10 @@ uv run pre-commit run --all-files
 Запуск:
 
 ```bash
-make lint      # линтинг
-make lint-fix  # автоисправление
-make format    # форматирование
+make lint        # все линтеры: ruff + ty + typos
+make lint-ruff   # только ruff
+make lint-fix    # автоисправление ruff
+make format      # форматирование
 ```
 
 Конфигурация в `pyproject.toml`:
@@ -41,6 +43,32 @@ make format    # форматирование
 - `B` — flake8-bugbear (антипаттерны)
 - `SIM` — flake8-simplify (упрощение синтаксиса)
 - `RET` — flake8-return (оптимизация return)
+
+## Проверка типов
+
+Проект использует [ty](https://github.com/astral-sh/ty) для проверки типов.
+
+Запуск:
+
+```bash
+make lint-ty  # эквивалент: uv run ty check
+```
+
+`make lint` запускает все линтеры сразу (ruff + ty + typos).
+
+Конфигурация в `pyproject.toml` (`[tool.ty.src]`, исключены `tests/`, `alembic/`).
+
+## Проверка орфографии
+
+Проект использует [typos](https://github.com/crate-ci/typos) для поиска опечаток в коде и документации.
+
+Запуск:
+
+```bash
+make lint-typos  # эквивалент: uv run typos
+```
+
+Конфигурация в `pyproject.toml` (`[tool.typos.files]`, исключён `alembic/`).
 
 ## Запуск локально
 

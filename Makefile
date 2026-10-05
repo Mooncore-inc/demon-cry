@@ -14,8 +14,19 @@ test: ## Run the test suite
 	uv run pytest
 
 .PHONY: lint
-lint: ## Run code linters
+lint: lint-ruff lint-ty lint-typos ## Run all linters (ruff + ty + typos)
+
+.PHONY: lint-ruff
+lint-ruff: ## Run ruff linter
 	uv run ruff check .
+
+.PHONY: lint-ty
+lint-ty: ## Run type checker
+	uv run ty check
+
+.PHONY: lint-typos
+lint-typos: ## Check spelling
+	uv run typos
 
 .PHONY: lint-fix
 lint-fix: ## Run linters and auto-fix issues
