@@ -1,10 +1,10 @@
 import logging
-from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from demon_cry.api.dependencies import AppRegistry, CurrentUser, LLMRepo, SettingsRepo
+from demon_cry.core.plugin_registry import ToolDefinition
 from demon_cry.services.llm import (
     DEFAULT_ITERATION_LIMIT,
     DEFAULT_SYSTEM_PROMPT,
@@ -97,17 +97,6 @@ async def tool_execute(
     user: CurrentUser,
 ):
     return await registry.execute(tool_name=tool_name, **req)
-
-
-class ToolFunction(BaseModel):
-    name: str
-    description: str
-    parameters: dict[str, Any]
-
-
-class ToolDefinition(BaseModel):
-    type: str
-    function: ToolFunction
 
 
 class ToolsResponse(BaseModel):

@@ -1,7 +1,7 @@
 import logging
 from importlib.metadata import entry_points
 from pkgutil import resolve_name
-from typing import Any, TypedDict
+from typing import Any
 
 from demon_cry_base.plugin import BasePlugin
 from pydantic import BaseModel
@@ -10,13 +10,14 @@ from demon_cry.database.engine import async_session_factory
 from demon_cry.database.repositories import PluginRepository
 
 
-class ToolFunction(TypedDict):
+class ToolFunction(BaseModel):
     name: str
+    category: str
     description: str
-    parameters: dict[str, Any]
+    parameters_model: dict[str, Any]
 
 
-class ToolDefinition(TypedDict):
+class ToolDefinition(BaseModel):
     type: str
     function: ToolFunction
 
@@ -49,19 +50,18 @@ class PluginRegistry:
                     logger.exception("Failed to load plugin: %s", ep.name)
 
     async def get_tools_schema(self) -> list[ToolDefinition]:
-        tools: list[ToolDefinition] = []
-        for plugin in self.plugins.values():
-            tools.append(
-                {
-                    "type": "function",
-                    "function": {
-                        "name": plugin.name,
-                        "description": f"[Category: {plugin.category}] {plugin.description}",
-                        "parameters": plugin.parameters_model.model_json_schema(),
-                    },
-                }
+        return [
+            ToolDefinition(
+                type="function",
+                function=ToolFunction(
+                    name=plugin.name,
+                    category=plugin.category,
+                    description=plugin.description,
+                    parameters_model=plugin.parameters_model.model_json_schema(),
+                ),
             )
-        return tools
+            for plugin in self.plugins.values()
+        ]
 
     async def execute(self, tool_name: str, **kwargs) -> dict:
         if tool_name not in self.plugins:
