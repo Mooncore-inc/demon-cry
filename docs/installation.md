@@ -25,14 +25,6 @@ DC_CORS_ORIGINS='["https://app.example.com"]' demon-cry
 
 Подробности: [Конфигурация](configuration.md#cors).
 
-## Из исходников (разработка)
-
-```bash
-git clone https://github.com/Mooncore-inc/demon-cry.git && cd demon-cry
-uv sync --locked --group dev
-uv run demon-cry migrate upgrade
-```
-
 ## NixOS
 
 Добавьте flake в inputs:

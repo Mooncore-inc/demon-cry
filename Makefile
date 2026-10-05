@@ -17,6 +17,10 @@ test: ## Run the test suite
 lint: ## Run code linters
 	uv run ruff check .
 
+.PHONY: lint-fix
+lint-fix: ## Run linters and auto-fix issues
+	uv run ruff check --fix .
+
 .PHONY: format
 format: ## Format code automatically
 	uv run ruff format
