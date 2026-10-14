@@ -29,17 +29,17 @@ class BaseRepository[ModelType: BaseModel]:
     async def create(self, **kwargs) -> ModelType:
         instance = self.model(**kwargs)
         self.session.add(instance)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(instance)
         return instance
 
     async def update(self, instance: ModelType, **kwargs) -> ModelType:
         for key, value in kwargs.items():
             setattr(instance, key, value)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(instance)
         return instance
 
     async def delete(self, instance: ModelType) -> None:
         await self.session.delete(instance)
-        await self.session.commit()
+        await self.session.flush()

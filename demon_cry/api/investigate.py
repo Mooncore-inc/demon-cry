@@ -1,102 +1,142 @@
-import logging
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel
 
-from demon_cry.api.dependencies import AppRegistry, CurrentUser, LLMRepo, SettingsRepo
-from demon_cry.core.plugin_registry import ToolDefinition
-from demon_cry.services.llm import (
-    DEFAULT_ITERATION_LIMIT,
-    DEFAULT_SYSTEM_PROMPT,
-    LLM,
-    TokenUsage,
-    ToolUsage,
+from demon_cry.api.dependencies import AppRegistry, CurrentUser, UoWDep
+from demon_cry.api.schemas.investigates import (
+    InvestigateCreate,
+    InvestigateDataResponse,
+    InvestigateResponse,
+    InvestigateUpdate,
 )
+from demon_cry.core.plugin_registry import ToolDefinition
+from demon_cry.database.models.investigate import InvestigatesModel
+from demon_cry.database.models.users import UserModel
+from demon_cry.database.uow import AppUnitOfWork
 
 router = APIRouter()
 
-logger = logging.getLogger(__name__)
+
+async def _get_owned(
+    uow: AppUnitOfWork, investigate_id: int, user: UserModel
+) -> InvestigatesModel:
+    inv = await uow.investigates.get_by_id(investigate_id)
+    if inv is None or inv.owner_id != user.id:
+        raise HTTPException(status_code=404, detail="Investigation not found")
+    return inv
 
 
-class OSINTRequest(BaseModel):
-    target: str
-    llm_model_id: int | None = None
+def _as_dict(value: object) -> dict:
+    if isinstance(value, dict):
+        return value
+    return {"data": value}
 
 
-class OSINTResponse(BaseModel):
-    status: str
-    result: str
-    tools_used: ToolUsage = ToolUsage()
-    tokens: TokenUsage = TokenUsage()
-
-
-@router.post(path="/investigate")
-async def investigate(
-    req: OSINTRequest,
-    registry: AppRegistry,
-    llm_repo: LLMRepo,
-    set_repo: SettingsRepo,
+@router.post(path="/investigates/", status_code=201, response_model=InvestigateResponse)
+async def create_investigate(
+    body: InvestigateCreate,
+    uow: UoWDep,
     user: CurrentUser,
 ):
-    try:
-        if req.llm_model_id:
-            model = await llm_repo.get_by_id(req.llm_model_id)
-        else:
-            model = await llm_repo.get(is_default=True)
-        if not model:
-            raise HTTPException(status_code=404, detail="LLM model not found")
-
-        # Fetch settings from DB
-        system_prompt_row = await set_repo.get(key="system_prompt")
-        iteration_limit_row = await set_repo.get(key="iteration_limit")
-
-        system_prompt = (
-            system_prompt_row.value if system_prompt_row else DEFAULT_SYSTEM_PROMPT
-        )
-        iteration_limit = (
-            int(iteration_limit_row.value)
-            if iteration_limit_row
-            else DEFAULT_ITERATION_LIMIT
-        )
-
-        llm = LLM(
-            base_url=model.base_url,
-            api_key=model.api_key,
-            model=model.model_name,
-            registry=registry,
-            system_prompt=system_prompt,
-            iteration_limit=iteration_limit,
-        )
-
-        res, tools, tokens = await llm.run_chain(user_query=req.target)
-        if res is None:
-            return OSINTResponse(
-                status="error",
-                result="Модель не завершила работу за отведённые итерации",
-                tools_used=tools,
-                tokens=tokens,
-            )
-        return OSINTResponse(
-            status="success",
-            result=res,
-            tools_used=tools,
-            tokens=tokens,
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("Investigation failed: %s", e)
-        return OSINTResponse(status="error", result="ошибка")
+    async with uow.transaction():
+        return await uow.investigates.create(name=body.name, owner_id=user.id)
 
 
-@router.post("/investigate/{tool_name}/execute")
-async def tool_execute(
+@router.get(path="/investigates/", response_model=list[InvestigateResponse])
+async def list_investigates(
+    uow: UoWDep,
+    user: CurrentUser,
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
+    return await uow.investigates.get_all(limit=limit, offset=offset, owner_id=user.id)
+
+
+@router.get(path="/investigates/{investigate_id}", response_model=InvestigateResponse)
+async def get_investigate(
+    investigate_id: int,
+    uow: UoWDep,
+    user: CurrentUser,
+):
+    return await _get_owned(uow, investigate_id, user)
+
+
+@router.patch(path="/investigates/{investigate_id}", response_model=InvestigateResponse)
+async def update_investigate(
+    investigate_id: int,
+    body: InvestigateUpdate,
+    uow: UoWDep,
+    user: CurrentUser,
+):
+    inv = await _get_owned(uow, investigate_id, user)
+    async with uow.transaction():
+        return await uow.investigates.update(inv, name=body.name)
+
+
+@router.delete(path="/investigates/{investigate_id}", status_code=204)
+async def delete_investigate(
+    investigate_id: int,
+    uow: UoWDep,
+    user: CurrentUser,
+):
+    inv = await _get_owned(uow, investigate_id, user)
+    async with uow.transaction():
+        await uow.investigates_data.delete_by_investigation(inv.id)
+        await uow.investigates.delete(inv)
+
+
+@router.post(path="/investigates/{investigate_id}/{tool_name}/execute")
+async def investigate_tool_execute(
+    investigate_id: int,
+    tool_name: Annotated[str, Path(max_length=128)],
     req: dict,
-    tool_name: str,
     registry: AppRegistry,
+    uow: UoWDep,
     user: CurrentUser,
 ):
-    return await registry.execute(tool_name=tool_name, **req)
+    inv = await _get_owned(uow, investigate_id, user)
+    params = dict(req or {})
+    params.pop("tool_name", None)
+    result = await registry.execute(tool_name=tool_name, **params)
+    if not isinstance(result, dict):
+        result = {"data": result}
+    status = str(result.get("status", "error" if "error" in result else "success"))
+    status = status[:32]
+    async with uow.transaction():
+        await uow.investigates_data.create(
+            investigate_id=inv.id,
+            plugin_name=tool_name,
+            status=status,
+            entities=_as_dict(result.get("entities", {})),
+            errors=_as_dict(result.get("errors", {})),
+        )
+    return result
+
+
+@router.get(
+    path="/investigates/{investigate_id}/data",
+    response_model=list[InvestigateDataResponse],
+)
+async def list_investigate_data(
+    investigate_id: int,
+    uow: UoWDep,
+    user: CurrentUser,
+    limit: int = Query(default=100, ge=1, le=1000),
+    offset: int = Query(default=0, ge=0),
+):
+    inv = await _get_owned(uow, investigate_id, user)
+    return await uow.investigates_data.get_all(
+        limit=limit, offset=offset, investigate_id=inv.id
+    )
+
+
+@router.post(path="/investigate", status_code=410)
+async def investigate_gone():
+    raise HTTPException(
+        status_code=410,
+        detail="LLM investigation is disabled, use /investigates CRUD + execute",
+    )
 
 
 class ToolsResponse(BaseModel):
