@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from demon_cry.api.dependencies import AppRegistry, CurrentUser, LLMRepo, SettingsRepo
+from demon_cry.api.dependencies import AppRegistry, CurrentUser, UoWDep
 from demon_cry.core.plugin_registry import ToolDefinition
 from demon_cry.services.llm import (
     DEFAULT_ITERATION_LIMIT,
@@ -34,21 +34,20 @@ class OSINTResponse(BaseModel):
 async def investigate(
     req: OSINTRequest,
     registry: AppRegistry,
-    llm_repo: LLMRepo,
-    set_repo: SettingsRepo,
+    uow: UoWDep,
     user: CurrentUser,
 ):
     try:
         if req.llm_model_id:
-            model = await llm_repo.get_by_id(req.llm_model_id)
+            model = await uow.llms.get_by_id(req.llm_model_id)
         else:
-            model = await llm_repo.get(is_default=True)
+            model = await uow.llms.get(is_default=True)
         if not model:
             raise HTTPException(status_code=404, detail="LLM model not found")
 
         # Fetch settings from DB
-        system_prompt_row = await set_repo.get(key="system_prompt")
-        iteration_limit_row = await set_repo.get(key="iteration_limit")
+        system_prompt_row = await uow.settings.get(key="system_prompt")
+        iteration_limit_row = await uow.settings.get(key="iteration_limit")
 
         system_prompt = (
             system_prompt_row.value if system_prompt_row else DEFAULT_SYSTEM_PROMPT

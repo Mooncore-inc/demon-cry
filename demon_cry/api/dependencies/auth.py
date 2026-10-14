@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from demon_cry.api.dependencies.database import UserRepo
+from demon_cry.api.dependencies.database import UoWDep
 from demon_cry.database.models.users import UserModel
 from demon_cry.utils.security import hash_token
 
@@ -12,13 +12,13 @@ Credentials = Annotated[HTTPAuthorizationCredentials | None, Security(security)]
 
 
 async def get_current_user(
-    user_repo: UserRepo,
+    uow: UoWDep,
     credentials: Credentials,
 ) -> UserModel:
     if not credentials:
         raise HTTPException(status_code=401, detail="Missing API key")
 
-    user = await user_repo.get(credentials=hash_token(credentials.credentials))
+    user = await uow.users.get(credentials=hash_token(credentials.credentials))
     if not user:
         raise HTTPException(status_code=401, detail="Invalid API key")
 

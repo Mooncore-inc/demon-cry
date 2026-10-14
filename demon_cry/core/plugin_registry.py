@@ -7,7 +7,7 @@ from demon_cry_base.plugin import BasePlugin
 from pydantic import BaseModel, ValidationError
 
 from demon_cry.database.engine import async_session_factory
-from demon_cry.database.repositories import PluginRepository
+from demon_cry.database.uow import AppUnitOfWork
 
 
 class ToolFunction(BaseModel):
@@ -33,19 +33,22 @@ class PluginRegistry:
     async def discover(self):
         eps = entry_points(group="demon_cry.plugins")
         async with self.session_factory() as session:
-            repo = PluginRepository(session=session)
+            uow = AppUnitOfWork(session)
             for ep in eps:
                 try:
                     plugin_class = ep.load()
                     instance = plugin_class()
                     self.plugins[instance.name] = instance
                     logger.info("Registered plugin: %s", instance.name)
-                    existing = await repo.get(plugin_name=instance.name)
+                    existing = await uow.plugins.get(plugin_name=instance.name)
                     if not existing:
                         defaults = instance.config_model().model_dump()
-                        await repo.create(
-                            plugin_name=instance.name, config=defaults, enabled=False
-                        )
+                        async with uow.transaction():
+                            await uow.plugins.create(
+                                plugin_name=instance.name,
+                                config=defaults,
+                                enabled=False,
+                            )
                 except Exception:
                     logger.exception("Failed to load plugin: %s", ep.name)
 
@@ -88,8 +91,8 @@ class PluginRegistry:
 
     async def _load_config(self, plugin_name: str) -> dict:
         async with self.session_factory() as session:
-            repo = PluginRepository(session=session)
-            record = await repo.get(plugin_name=plugin_name)
+            uow = AppUnitOfWork(session)
+            record = await uow.plugins.get(plugin_name=plugin_name)
             if record and record.enabled:
                 return record.config
         return {}

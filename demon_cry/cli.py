@@ -47,19 +47,20 @@ async def _user_create(username: str, is_admin: bool) -> int:
     import secrets
 
     from demon_cry.database.engine import async_session_factory
-    from demon_cry.database.repositories.users import UserRepository
+    from demon_cry.database.uow import AppUnitOfWork
     from demon_cry.utils.security import hash_token
 
     api_key = secrets.token_urlsafe(32)
     async with async_session_factory() as session:
-        repo = UserRepository(session)
-        existing = await repo.get(username=username)
+        uow = AppUnitOfWork(session)
+        existing = await uow.users.get(username=username)
         if existing:
             print(f"User '{username}' already exists", file=sys.stderr)
             return 1
-        await repo.create(
-            username=username, credentials=hash_token(api_key), is_admin=is_admin
-        )
+        async with uow.transaction():
+            await uow.users.create(
+                username=username, credentials=hash_token(api_key), is_admin=is_admin
+            )
 
     print(f"User '{username}' created")
     print(f"API key: {api_key}")
