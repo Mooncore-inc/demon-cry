@@ -30,26 +30,32 @@ curl -X POST http://localhost:8000/api/v1/admin/users \
 Все запросы к API требуют Bearer-токен (API key пользователя):
 
 ```bash
-curl -X POST http://localhost:8000/api/v1/investigate \
+curl -X POST http://localhost:8000/api/v1/investigates/ \
   -H "Authorization: Bearer <api_key>" \
   -H "Content-Type: application/json" \
-  -d '{"target": "example.com"}'
+  -d '{"name": "case-1"}'
 ```
 
 ### Investigation endpoints
 
 | Endpoint | Метод | Описание |
 |----------|-------|----------|
-| `/api/v1/investigate` | POST | Запустить OSINT-расследование |
+| `/api/v1/investigates/` | POST | Создать расследование |
+| `/api/v1/investigates/` | GET | Список своих расследований |
+| `/api/v1/investigates/{id}` | GET | Получить расследование |
+| `/api/v1/investigates/{id}` | PATCH | Переименовать расследование |
+| `/api/v1/investigates/{id}` | DELETE | Удалить расследование и его данные |
+| `/api/v1/investigates/{id}/data` | GET | Список run'ов расследования |
+| `/api/v1/investigates/{id}/{tool_name}/execute` | POST | Выполнить инструмент в контексте расследования |
 | `/api/v1/investigate/tools` | GET | Список доступных инструментов (OpenAI-compatible schema) |
-| `/api/v1/investigate/{tool_name}/execute` | POST | Выполнить инструмент напрямую |
+| `/api/v1/investigate` | POST | Disabled (410), LLM investigation удалён |
 
 ## Роли
 
 | Роль | Доступ |
 |------|--------|
 | Admin | Полный доступ: user CRUD, настройки, плагины, LLM-модели |
-| User | Только investigation endpoints (`POST /api/v1/investigate`, `GET /api/v1/investigate/tools`, `POST /api/v1/investigate/{tool_name}/execute`) |
+| User | Только investigation endpoints (`/api/v1/investigates/*`, `GET /api/v1/investigate/tools`) |
 
 ## Admin API
 

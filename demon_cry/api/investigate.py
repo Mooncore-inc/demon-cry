@@ -1,8 +1,7 @@
-import logging
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Path, Query
 from pydantic import BaseModel
-from sqlalchemy import delete
 
 from demon_cry.api.dependencies import AppRegistry, CurrentUser, UoWDep
 from demon_cry.api.schemas.investigates import (
@@ -12,16 +11,11 @@ from demon_cry.api.schemas.investigates import (
     InvestigateUpdate,
 )
 from demon_cry.core.plugin_registry import ToolDefinition
-from demon_cry.database.models.investigate import (
-    InvestigatesDataModel,
-    InvestigatesModel,
-)
+from demon_cry.database.models.investigate import InvestigatesModel
 from demon_cry.database.models.users import UserModel
 from demon_cry.database.uow import AppUnitOfWork
 
 router = APIRouter()
-
-logger = logging.getLogger(__name__)
 
 
 async def _get_owned(
@@ -88,28 +82,27 @@ async def delete_investigate(
 ):
     inv = await _get_owned(uow, investigate_id, user)
     async with uow.transaction():
-        await uow.session.execute(
-            delete(InvestigatesDataModel).where(
-                InvestigatesDataModel.investigate_id == inv.id
-            )
-        )
+        await uow.investigates_data.delete_by_investigation(inv.id)
         await uow.investigates.delete(inv)
 
 
 @router.post(path="/investigates/{investigate_id}/{tool_name}/execute")
 async def investigate_tool_execute(
     investigate_id: int,
-    tool_name: str,
+    tool_name: Annotated[str, Path(max_length=128)],
     req: dict,
     registry: AppRegistry,
     uow: UoWDep,
     user: CurrentUser,
 ):
     inv = await _get_owned(uow, investigate_id, user)
-    result = await registry.execute(tool_name=tool_name, **req)
+    params = dict(req or {})
+    params.pop("tool_name", None)
+    result = await registry.execute(tool_name=tool_name, **params)
     if not isinstance(result, dict):
         result = {"data": result}
     status = str(result.get("status", "error" if "error" in result else "success"))
+    status = status[:32]
     async with uow.transaction():
         await uow.investigates_data.create(
             investigate_id=inv.id,

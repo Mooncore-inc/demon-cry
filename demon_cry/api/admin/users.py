@@ -16,8 +16,12 @@ async def create_user(body: UserCreate, uow: UoWDep):
         user = await uow.users.create(
             username=body.username, credentials=hash_token(token)
         )
-    user.credentials = token
-    return user
+    return UserResponse(
+        id=user.id,
+        username=user.username,
+        credentials=token,
+        is_admin=user.is_admin,
+    )
 
 
 @users_router.get(path="/{user_id}", response_model=UserResponse)
