@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from demon_cry.database.repositories import (
+    InvestigatesDataRepository,
+    InvestigatesRepository,
     LLMRepository,
     PluginRepository,
     SettingsRepository,
@@ -18,3 +20,5 @@ class AppUnitOfWork(UnitOfWorkBase):
         self.settings = SettingsRepository(session)
         self.plugins = PluginRepository(session)
         self.llms = LLMRepository(session)
+        self.investigates = InvestigatesRepository(session)
+        self.investigates_data = InvestigatesDataRepository(session)

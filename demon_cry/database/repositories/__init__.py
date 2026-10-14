@@ -1,4 +1,8 @@
 from demon_cry.database.repositories.base import BaseRepository
+from demon_cry.database.repositories.investigate import (
+    InvestigatesDataRepository,
+    InvestigatesRepository,
+)
 from demon_cry.database.repositories.llm_models import LLMRepository
 from demon_cry.database.repositories.plugins import PluginRepository
 from demon_cry.database.repositories.settings import SettingsRepository
@@ -10,4 +14,6 @@ __all__ = [
     "UserRepository",
     "PluginRepository",
     "LLMRepository",
+    "InvestigatesRepository",
+    "InvestigatesDataRepository",
 ]

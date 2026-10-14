@@ -1,5 +1,8 @@
 from demon_cry.database.models.base import BaseModel
-from demon_cry.database.models.investigate import InvestigatesModel
+from demon_cry.database.models.investigate import (
+    InvestigatesDataModel,
+    InvestigatesModel,
+)
 from demon_cry.database.models.llm_models import LLMModel
 from demon_cry.database.models.plugins import PluginModel
 from demon_cry.database.models.settings import SettingsModel
@@ -12,4 +15,5 @@ __all__ = [
     "PluginModel",
     "LLMModel",
     "InvestigatesModel",
+    "InvestigatesDataModel",
 ]
