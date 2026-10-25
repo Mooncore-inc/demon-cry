@@ -34,7 +34,6 @@ demon-cry server
 | `demon-cry migrate current` | Текущая ревизия |
 | `demon-cry migrate history` | История миграций |
 | `demon-cry user create <имя> [--admin]` | Создать пользователя |
-| `--no-banner` | Убрать ASCII-баннер при старте |
 
 ## Использование
 
