@@ -7,9 +7,10 @@ from demon_cry.database.models.base import BaseModel
 
 
 class BaseRepository[ModelType: BaseModel]:
-    def __init__(self, session: AsyncSession, model: type[ModelType]):
+    model: type[ModelType]
+
+    def __init__(self, session: AsyncSession):
         self.session = session
-        self.model = model
 
     async def get_by_id(self, id: int) -> ModelType | None:
         return await self.session.get(self.model, id)
