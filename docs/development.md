@@ -83,7 +83,7 @@ demon-cry user create admin --admin
 Дефолтных CORS-origins (`localhost:3000/5173`, `127.0.0.1:3000/5173`) хватает для локального фронта. Если фронт на другом порту/домене:
 
 ```bash
-DC_CORS_ORIGINS='["*"]' demon-cry
+DC_CORS_ORIGINS='["*"]' demon-cry server
 ```
 
 Подробности: [Конфигурация](configuration.md#cors).

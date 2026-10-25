@@ -15,7 +15,7 @@ uv tool install demon-cry
 # или: pip install demon-cry
 demon-cry migrate upgrade
 demon-cry user create admin --admin
-demon-cry
+demon-cry server
 ```
 
 | Название | Ссылка |
@@ -28,7 +28,7 @@ demon-cry
 
 | Команда | Описание |
 |---------|----------|
-| `demon-cry` | Запустить API-сервер |
+| `demon-cry server` | Запустить API-сервер |
 | `demon-cry migrate upgrade [ревизия]` | Применить миграции БД (по умолчанию: head) |
 | `demon-cry migrate downgrade [ревизия]` | Откатить миграции (по умолчанию: -1) |
 | `demon-cry migrate current` | Текущая ревизия |
