@@ -5,6 +5,8 @@ from demon_cry.database.models import (
     UserModel,
 )
 from demon_cry.database.repositories import (
+    InvestigateEntitiesRepository,
+    InvestigateEntityLinksRepository,
     InvestigatesDataRepository,
     InvestigatesRepository,
     repo,
@@ -26,3 +28,5 @@ class AppUnitOfWork(UnitOfWorkBase):
     llms = repo(LLMModel)
     investigates = repo(InvestigatesRepository)
     investigates_data = repo(InvestigatesDataRepository)
+    entities = repo(InvestigateEntitiesRepository)
+    entity_links = repo(InvestigateEntityLinksRepository)
