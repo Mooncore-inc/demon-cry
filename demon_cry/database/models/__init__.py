@@ -1,4 +1,8 @@
 from demon_cry.database.models.base import BaseModel
+from demon_cry.database.models.entities import (
+    InvestigateEntityLinkModel,
+    InvestigateEntityModel,
+)
 from demon_cry.database.models.investigate import (
     InvestigatesDataModel,
     InvestigatesModel,
@@ -16,4 +20,6 @@ __all__ = [
     "LLMModel",
     "InvestigatesModel",
     "InvestigatesDataModel",
+    "InvestigateEntityModel",
+    "InvestigateEntityLinkModel",
 ]

@@ -6,15 +6,6 @@ import sys
 from demon_cry.__main__ import app
 from demon_cry.core.config import config
 
-banner = r"""
-      _
-   __| | ___ _ __ ___   ___  _ __     ___ _ __ _   _    ___ ___  _ __ ___
-  / _` |/ _ \ '_ ` _ \ / _ \| '_ \   / __| '__| | | |  / __/ _ \| '__/ _ \
- | (_| |  __/ | | | | | (_) | | | | | (__| |  | |_| | | (_| (_) | | |  __/
-  \__,_|\___|_| |_| |_|\___/|_| |_|  \___|_|   \__, |  \___\___/|_|  \___|
-                                                |___/
-"""
-
 
 def _build_alembic_config():
     from pathlib import Path
@@ -77,7 +68,7 @@ def _user_command(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="demon-cry",
-        description="Run the Demon Cry OSINT agent API server.",
+        description="Run the Demon Cry",
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -104,11 +95,8 @@ def build_parser() -> argparse.ArgumentParser:
     user_create.add_argument("username", help="Username")
     user_create.add_argument("--admin", action="store_true", help="Create as admin")
 
-    parser.add_argument(
-        "--no-banner",
-        action="store_true",
-        help="Suppress the startup banner.",
-    )
+    subparsers.add_parser("server", help="Run the Demon Cry OSINT agent API server")
+
     return parser
 
 
@@ -123,18 +111,18 @@ def main():
         filemode="a",
     )
 
-    if getattr(args, "command", None) == "migrate":
+    command = getattr(args, "command", None)
+
+    if command == "migrate":
         raise SystemExit(_migrate_command(args))
 
-    if getattr(args, "command", None) == "user":
+    if command == "user":
         raise SystemExit(_user_command(args))
 
-    import uvicorn
+    if command in (None, "server"):
+        import uvicorn
 
-    if not args.no_banner:
-        print(banner)
-
-    uvicorn.run(app, host=config.host, port=config.port)
+        uvicorn.run(app, host=config.host, port=config.port)
 
 
 if __name__ == "__main__":
