@@ -28,7 +28,7 @@ demon-cry = "demon_cry.cli:main"
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.6.1,<5.0.0",
+    "prek>=0.5.10",
     "pytest>=8.0.0,<9.1.1",
     "pytest-asyncio>=0.24.0,<1.4.0",
     "ruff>=0.16.6,<0.17.0",
@@ -47,9 +47,10 @@ source = "vcs"
 line-length = 88
 target-version = "py312"
 extend-exclude = ["alembic"]
+force-exclude = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "RET"]
+select = ["E", "F", "I", "UP", "B", "SIM", "RET", "T10"]
 ignore = ["E501"]
 
 [tool.ruff.format]
