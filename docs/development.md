@@ -9,17 +9,17 @@ make setup
 
 ## Pre-commit
 
-Проект использует [pre-commit](https://pre-commit.com/) для автоматической проверки кода перед коммитом.
+Проект использует [prek](https://prek.j178.dev/) для автоматической проверки кода перед коммитом.
 Хуки: ruff (линтинг и форматирование), ty (проверка типов), typos (орфография) и базовые проверки файлов.
 
 Активация хуков (один раз после clone):
 
-`pre-commit` уже в `[dependency-groups] dev`, отдельная установка не нужна.
+`prek` уже в `[dependency-groups] dev`, отдельная установка не нужна.
 
 Запуск вручную:
 
 ```bash
-uv run pre-commit run --all-files
+uv run prek run --all-files
 ```
 
 ## Линтер и форматтер

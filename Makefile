@@ -7,7 +7,7 @@ help: ## Show this help message
 .PHONY: setup
 setup: ## Install dependencies and configure the environment
 	uv sync --all-groups
-	uv run pre-commit install
+	uv run prek install
 
 .PHONY: test
 test: ## Run the test suite

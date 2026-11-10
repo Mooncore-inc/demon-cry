@@ -108,7 +108,9 @@ def _backfill() -> None:
     try:
         from demon_cry.services.entities import extract_entities
     except Exception:  # pragma: no cover - защита от обращения из alembic-окружения
-        logger.warning("entities extractor unavailable, backfill skipped", exc_info=True)
+        logger.warning(
+            "entities extractor unavailable, backfill skipped", exc_info=True
+        )
         return
 
     conn = op.get_bind()
@@ -136,12 +138,16 @@ def _backfill() -> None:
     after = 0
     now = datetime.now(UTC)
     while True:
-        rows = conn.execute(
-            sa.select(runs_t.c.id, runs_t.c.investigate_id, runs_t.c.entities)
-            .where(runs_t.c.id > after)
-            .order_by(runs_t.c.id)
-            .limit(BATCH_SIZE)
-        ).mappings().all()
+        rows = (
+            conn.execute(
+                sa.select(runs_t.c.id, runs_t.c.investigate_id, runs_t.c.entities)
+                .where(runs_t.c.id > after)
+                .order_by(runs_t.c.id)
+                .limit(BATCH_SIZE)
+            )
+            .mappings()
+            .all()
+        )
         if not rows:
             break
         for row in rows:
